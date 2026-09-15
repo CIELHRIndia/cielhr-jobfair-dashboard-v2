@@ -1,37 +1,5 @@
 [
   {
-    "id": "auto-6",
-    "name": "Rojgar Mela Meerut (Phase 1)",
-    "date": "2026-09-07",
-    "region": "Meerut, Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Government of Uttar Pradesh",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "None",
-    "est": 170,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-7",
-    "name": "Rojgar Mela Meerut (Phase 2)",
-    "date": "2026-09-12",
-    "region": "Meerut, Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Government of Uttar Pradesh",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "None",
-    "est": 990,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
     "id": "auto-8",
     "name": "Rojgar Mela Meerut (Phase 3)",
     "date": "2026-09-16",
@@ -62,22 +30,6 @@
     "url": "https://telcojobs.in/jobfairlist.aspx"
   },
   {
-    "id": "e1",
-    "name": "HackerX Tech Job Fair - Mumbai",
-    "date": "2026-09-17",
-    "region": "Mumbai, Maharashtra, India",
-    "category": "Sector-Specific Tech & Startup Aggregators",
-    "org": "HackerX",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "2026-09-10",
-    "est": 300,
-    "skills": [
-      "BE /B Tech and Post Graduate"
-    ],
-    "url": "https://hackerx.org/tech-job-fairs/india/"
-  },
-  {
     "id": "auto-20",
     "name": "Kaushal Mahotsav (Rozgar Mela) - Lucknow",
     "date": "2026-09-17",
@@ -90,6 +42,20 @@
     "est": null,
     "skills": [],
     "url": "https://telcojobs.in/jobfairlist.aspx"
+  },
+  {
+    "id": "auto-28",
+    "name": "HackerX - Mumbai Tech Job Fair",
+    "date": "2026-09-17",
+    "region": "Mumbai, India",
+    "category": "Sector-Specific Tech & Startup Aggregators",
+    "org": "HackerX",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": null,
+    "skills": [],
+    "url": "https://hackerx.org/tech-job-fairs/india"
   },
   {
     "id": "auto-9",
@@ -336,6 +302,20 @@
       "Graduates"
     ],
     "url": "https://hackerx.org/tech-job-fairs/india"
+  },
+  {
+    "id": "auto-29",
+    "name": "HackerX - Pune Tech Job Fair",
+    "date": "2026-11-12",
+    "region": "Pune, India",
+    "category": "Sector-Specific Tech & Startup Aggregators",
+    "org": "HackerX",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": null,
+    "skills": [],
+    "url": "https://hackerx.org/tech-job-fairs/india/pune"
   },
   {
     "id": "auto-14",
