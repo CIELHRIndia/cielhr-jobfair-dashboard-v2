@@ -2,9 +2,19 @@ name: Refresh Job Fair Data
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Choose refresh mode"
+        required: true
+        default: "full"
+        type: choice
+        options:
+          - full
+          - cleanup-only
+
   schedule:
-    # Every Monday at 9:00 AM IST (03:30 UTC)
-    - cron: "30 3 * * 1"
+    # Run every day at 9:00 AM IST (03:30 UTC)
+    - cron: "30 3 * * *"
 
 permissions:
   contents: write
@@ -25,10 +35,33 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Research upcoming job fairs
+      # Manual full refresh
+      - name: Manual full refresh
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'full'
         env:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: python scripts/research.py
+
+      # Manual cleanup-only test
+      - name: Manual cleanup only
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'cleanup-only'
+        run: python scripts/research.py --cleanup-only
+
+      # Automatic scheduled run
+      - name: Automatic scheduled refresh
+        if: github.event_name == 'schedule'
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        run: |
+          DAY_OF_WEEK=$(date -u +%u)
+
+          if [ "$DAY_OF_WEEK" = "1" ]; then
+            echo "Monday — running cleanup + Tavily research."
+            python scripts/research.py
+          else
+            echo "Tuesday-Sunday — running cleanup only."
+            python scripts/research.py --cleanup-only
+          fi
 
       - name: Commit updated event data
         run: |
