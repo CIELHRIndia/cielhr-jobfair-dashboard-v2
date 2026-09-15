@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import re
@@ -11,8 +12,35 @@ import requests
 
 # ---------------------------------------------------------
 # CIEL HR Job Fair Dashboard V2
-# Tavily research + automatic event cleanup → events.json
+#
+# Event maintenance modes:
+#
+# 1. Full refresh:
+#       python scripts/research.py
+#
+#    Performs:
+#    - expired event cleanup
+#    - registration deadline cleanup
+#    - Tavily research
+#    - validation
+#    - duplicate detection
+#    - merge
+#    - nearest-date sorting
+#    - events.json update
+#
+# 2. Cleanup only:
+#       python scripts/research.py --cleanup-only
+#
+#    Performs:
+#    - expired event cleanup
+#    - registration deadline cleanup
+#    - nearest-date sorting
+#    - events.json update
+#
+#    IMPORTANT:
+#    Cleanup-only mode makes ZERO Tavily API calls.
 # ---------------------------------------------------------
+
 
 ROOT = Path(__file__).resolve().parents[1]
 EVENTS_FILE = ROOT / "events.json"
@@ -102,7 +130,9 @@ def load_existing_events():
         data = json.load(f)
 
     if not isinstance(data, list):
-        raise RuntimeError("events.json must contain a JSON array.")
+        raise RuntimeError(
+            "events.json must contain a JSON array."
+        )
 
     print(f"Existing events: {len(data)}")
     return data
@@ -121,7 +151,15 @@ def normalize_url(url):
         netloc = parts.netloc.lower().replace("www.", "")
         path = parts.path.rstrip("/")
 
-        return urlunsplit((scheme, netloc, path, "", ""))
+        return urlunsplit(
+            (
+                scheme,
+                netloc,
+                path,
+                "",
+                "",
+            )
+        )
 
     except Exception:
         return url.lower().rstrip("/")
@@ -154,8 +192,10 @@ def normalize_text(value):
 def parse_iso_date(value):
     """
     Convert YYYY-MM-DD into a date object.
+
     Returns None for anything else.
     """
+
     value = str(value or "").strip()
 
     if not re.fullmatch(
@@ -175,6 +215,7 @@ def is_recurring_date(value):
     """
     Accept explicit recurring/rolling schedule descriptions.
     """
+
     text = normalize_text(value)
 
     return (
@@ -194,11 +235,14 @@ def normalize_event_date(value):
     Recurring — description
 
     If Tavily gives a range such as:
+
     2026-10-09 to 2026-10-10
 
     we store the first date:
+
     2026-10-09
     """
+
     value = str(value or "").strip()
 
     if not value:
@@ -236,8 +280,9 @@ def normalize_event_date(value):
             and second_date >= first_date
         ):
             print(
-                f"Date range normalized: "
-                f"{value} → {first_date.isoformat()}"
+                "Date range normalized: "
+                f"{value} → "
+                f"{first_date.isoformat()}"
             )
 
             return first_date.isoformat()
@@ -252,6 +297,7 @@ def registration_is_open(reg_close):
 
     Rolling or blank deadlines remain allowed.
     """
+
     value = str(
         reg_close or ""
     ).strip()
@@ -266,7 +312,7 @@ def registration_is_open(reg_close):
 
     if deadline is None:
         # Do not invent or reinterpret an unknown deadline.
-        # Preserve it only if Tavily supplied a non-date value.
+        # Preserve it if Tavily supplied a non-date value.
         return True
 
     return deadline >= TODAY_DATE
@@ -275,8 +321,10 @@ def registration_is_open(reg_close):
 def event_is_upcoming(event_date):
     """
     Fixed-date events must be today or later.
+
     Explicitly recurring events are allowed.
     """
+
     if is_recurring_date(event_date):
         return True
 
@@ -292,6 +340,7 @@ def source_is_allowed(url):
     """
     Reject social-media-only sources.
     """
+
     domain = get_domain(url)
 
     if not domain:
@@ -305,6 +354,127 @@ def source_is_allowed(url):
             return False
 
     return True
+
+
+def cleanup_existing_events(events):
+    """
+    Remove events from the active events.json when they
+    are no longer actionable.
+
+    Rules:
+
+    - Fixed event date before today -> remove
+    - Explicit ISO registration deadline before today -> remove
+    - Event date today -> keep
+    - Registration deadline today -> keep
+    - Blank/unknown registration deadline -> keep until event passes
+    - Recurring/rolling event dates -> keep unless an explicit
+      ISO registration deadline has passed
+
+    This function performs NO Tavily calls.
+    """
+
+    kept = []
+    removed = []
+
+    for event in events:
+        event_name = str(
+            event.get(
+                "name",
+                "Unnamed event",
+            )
+        ).strip()
+
+        event_date = str(
+            event.get(
+                "date",
+                "",
+            )
+            or ""
+        ).strip()
+
+        reg_close = str(
+            event.get(
+                "regClose",
+                "",
+            )
+            or ""
+        ).strip()
+
+        remove_reason = None
+
+        # -------------------------------------------------
+        # Rule 1:
+        # Remove fixed-date events whose event date passed.
+        # -------------------------------------------------
+
+        if not is_recurring_date(event_date):
+            parsed_event_date = parse_iso_date(
+                event_date
+            )
+
+            if (
+                parsed_event_date
+                and parsed_event_date < TODAY_DATE
+            ):
+                remove_reason = (
+                    "event date passed "
+                    f"({event_date})"
+                )
+
+        # -------------------------------------------------
+        # Rule 2:
+        # Remove events whose explicit registration
+        # deadline passed.
+        # -------------------------------------------------
+
+        if (
+            remove_reason is None
+            and reg_close
+        ):
+            if normalize_text(reg_close) != "rolling":
+                parsed_deadline = parse_iso_date(
+                    reg_close
+                )
+
+                if (
+                    parsed_deadline
+                    and parsed_deadline < TODAY_DATE
+                ):
+                    remove_reason = (
+                        "registration deadline passed "
+                        f"({reg_close})"
+                    )
+
+        # -------------------------------------------------
+        # Keep or remove
+        # -------------------------------------------------
+
+        if remove_reason:
+            removed.append(event)
+
+            print(
+                "REMOVED EXPIRED EVENT: "
+                f"{event_name} — "
+                f"{remove_reason}"
+            )
+
+        else:
+            kept.append(event)
+
+    print()
+
+    print(
+        f"Existing events kept: "
+        f"{len(kept)}"
+    )
+
+    print(
+        "Expired/unactionable events removed: "
+        f"{len(removed)}"
+    )
+
+    return kept, removed
 
 
 def tavily_search(query):
@@ -326,21 +496,22 @@ def tavily_search(query):
         "Each item must contain: "
         "name,date,region,category,org,fmt,fee,"
         "regClose,est,skills,url. "
-        "Use null or an empty value when fee, registration deadline, "
-        "estimated footfall, skills, category, or format cannot be "
-        "verified from a source. "
-        "For format, use Virtual only when the source clearly says "
-        "virtual/online, Hybrid only when clearly stated, and In-person "
-        "only when the source clearly describes a physical city/district "
-        "venue or an in-person fair. "
-        "Never guess Free, 0 footfall, Graduates, In-person, or a "
-        "district-employment category merely to fill a field. "
+        "Use null or an empty value when fee, registration deadline, estimated "
+        "footfall, skills, category, or format cannot be verified from a source. "
+        "For format, use Virtual only when the source clearly says virtual/online, "
+        "Hybrid only when clearly stated, and In-person only when the source clearly "
+        "describes a physical city/district venue or an in-person fair. "
+        "Never guess Free, 0 footfall, Graduates, In-person, or a district-employment "
+        "category merely to fill a field. "
         "Return source URLs as plain https URLs, never Markdown links. "
         "No markdown or explanation."
     )
 
     payload = {
-        "query": query + structured_instruction,
+        "query": (
+            query
+            + structured_instruction
+        ),
         "search_depth": "advanced",
         "topic": "general",
         "max_results": 10,
@@ -352,7 +523,9 @@ def tavily_search(query):
     }
 
     headers = {
-        "Authorization": f"Bearer {TAVILY_API_KEY}",
+        "Authorization": (
+            f"Bearer {TAVILY_API_KEY}"
+        ),
         "Content-Type": "application/json",
     }
 
@@ -369,7 +542,7 @@ def tavily_search(query):
 
     if response.status_code != 200:
         raise RuntimeError(
-            f"Tavily API error "
+            "Tavily API error "
             f"{response.status_code}: "
             f"{response.text}"
         )
@@ -409,7 +582,8 @@ def extract_json_array(answer):
     except json.JSONDecodeError:
         pass
 
-    # Fallback: locate first JSON array-looking block.
+    # Fallback:
+    # locate first JSON array-looking block.
     match = re.search(
         r"\[[\s\S]*\]",
         text,
@@ -434,7 +608,7 @@ def extract_json_array(answer):
 
     except json.JSONDecodeError as exc:
         print(
-            f"Could not parse Tavily JSON answer: "
+            "Could not parse Tavily JSON answer: "
             f"{exc}"
         )
 
@@ -446,8 +620,10 @@ def clean_source_url(value):
     Convert Tavily/LLM URL output into a plain URL.
 
     Also repairs accidental Markdown-link strings such as:
+
     [https://example.com](https://example.com)
     """
+
     text = str(
         value or ""
     ).strip()
@@ -458,9 +634,7 @@ def clean_source_url(value):
     )
 
     if markdown_match:
-        text = markdown_match.group(
-            1
-        ).strip()
+        text = markdown_match.group(1).strip()
 
     plain_match = re.search(
         r"https?://[^\s)\]]+",
@@ -468,9 +642,9 @@ def clean_source_url(value):
     )
 
     if plain_match:
-        return plain_match.group(
-            0
-        ).rstrip(".,;")
+        return plain_match.group(0).rstrip(
+            ".,;"
+        )
 
     return text
 
@@ -487,6 +661,7 @@ def infer_category(
     Never default every unknown event to
     District Employment Exchange Fairs.
     """
+
     text = normalize_text(
         " ".join(
             [
@@ -508,7 +683,8 @@ def infer_category(
         )
     ):
         return (
-            "Sector-Specific Tech & Startup Aggregators"
+            "Sector-Specific Tech & Startup "
+            "Aggregators"
         )
 
     if any(
@@ -522,7 +698,8 @@ def infer_category(
         )
     ):
         return (
-            "Equity, Diversity & Inclusion (DEI) Foundations"
+            "Equity, Diversity & Inclusion "
+            "(DEI) Foundations"
         )
 
     if any(
@@ -534,7 +711,8 @@ def infer_category(
         )
     ):
         return (
-            "Media House & Publication Job Fairs"
+            "Media House & Publication "
+            "Job Fairs"
         )
 
     if any(
@@ -548,7 +726,8 @@ def infer_category(
         )
     ):
         return (
-            "Skill Sector Councils (SSCs) Job Fairs"
+            "Skill Sector Councils (SSCs) "
+            "Job Fairs"
         )
 
     if any(
@@ -576,7 +755,8 @@ def infer_category(
         )
     ):
         return (
-            "NSDC & MSDE Flagship Rozgar Melas"
+            "NSDC & MSDE Flagship "
+            "Rozgar Melas"
         )
 
     if any(
@@ -594,7 +774,8 @@ def infer_category(
         )
     ):
         return (
-            "District Employment Exchange Fairs"
+            "District Employment Exchange "
+            "Fairs"
         )
 
     # Unknown category is not enough evidence
@@ -613,13 +794,17 @@ def infer_format(
     Infer an event format only when there is a strong signal.
 
     Rules:
+
     - Explicit virtual/online wording -> Virtual
     - Explicit hybrid wording -> Hybrid
     - Government/district Rozgar Mela / Employment Exchange
-      style events with a physical city/district -> In-person
+      style events with a physical city/district location
+      -> In-person
     - HackerX city tech fairs -> In-person
-    - Otherwise return "" so candidate is rejected
+    - Otherwise return "" so the candidate is rejected
+      rather than guessed.
     """
+
     text = normalize_text(
         " ".join(
             [
@@ -648,8 +833,8 @@ def infer_format(
     if "hybrid" in text:
         return "Hybrid"
 
-    # HackerX city fairs are physical events unless
-    # explicitly marked otherwise.
+    # HackerX city fairs are physical events
+    # unless explicitly marked otherwise.
     if (
         "hackerx" in text
         and any(
@@ -670,8 +855,8 @@ def infer_format(
         return "In-person"
 
     # Government / district job-fair style events
-    # are typically physical when a concrete location
-    # is present and the event is not virtual.
+    # are typically physical when the record names
+    # a concrete district/city and is not virtual.
     govt_job_fair_terms = (
         "rojgar mela",
         "rozgar mela",
@@ -707,40 +892,63 @@ def clean_event(raw):
         return None
 
     name = str(
-        raw.get("name", "")
+        raw.get(
+            "name",
+            "",
+        )
     ).strip()
 
     raw_event_date = str(
-        raw.get("date", "")
+        raw.get(
+            "date",
+            "",
+        )
     ).strip()
 
     region = str(
-        raw.get("region", "")
+        raw.get(
+            "region",
+            "",
+        )
     ).strip()
 
     category = str(
-        raw.get("category", "")
+        raw.get(
+            "category",
+            "",
+        )
     ).strip()
 
     org = str(
-        raw.get("org", "")
+        raw.get(
+            "org",
+            "",
+        )
     ).strip()
 
     fmt = str(
-        raw.get("fmt", "")
+        raw.get(
+            "fmt",
+            "",
+        )
     ).strip()
 
     fee = str(
-        raw.get("fee", "")
+        raw.get(
+            "fee",
+            "",
+        )
     ).strip()
 
     reg_close = str(
-        raw.get("regClose", "") or ""
+        raw.get(
+            "regClose",
+            "",
+        )
+        or ""
     ).strip()
 
-    if normalize_text(
-        reg_close
-    ) in {
+    if normalize_text(reg_close) in {
         "none",
         "null",
         "unknown",
@@ -750,7 +958,10 @@ def clean_event(raw):
         reg_close = ""
 
     url = clean_source_url(
-        raw.get("url", "")
+        raw.get(
+            "url",
+            "",
+        )
     )
 
     # -----------------------------------------------------
@@ -767,16 +978,19 @@ def clean_event(raw):
     if not url:
         print(
             f"Rejected candidate: {name} — "
-            f"missing source URL."
+            "missing source URL."
         )
         return None
 
     if not url.lower().startswith(
-        ("http://", "https://")
+        (
+            "http://",
+            "https://",
+        )
     ):
         print(
             f"Rejected candidate: {name} — "
-            f"invalid source URL."
+            "invalid source URL."
         )
         return None
 
@@ -787,9 +1001,10 @@ def clean_event(raw):
     if not source_is_allowed(url):
         print(
             f"Rejected candidate: {name} — "
-            f"social-media-only/blocked source: "
+            "social-media-only/blocked source: "
             f"{url}"
         )
+
         return None
 
     # -----------------------------------------------------
@@ -803,19 +1018,19 @@ def clean_event(raw):
     if not event_date:
         print(
             f"Rejected candidate: {name} — "
-            f"invalid event date: "
+            "invalid event date: "
             f"{raw_event_date}"
         )
+
         return None
 
-    if not event_is_upcoming(
-        event_date
-    ):
+    if not event_is_upcoming(event_date):
         print(
             f"Rejected candidate: {name} — "
-            f"event date already passed: "
+            "event date already passed: "
             f"{event_date}"
         )
+
         return None
 
     # -----------------------------------------------------
@@ -827,9 +1042,10 @@ def clean_event(raw):
     ):
         print(
             f"Rejected candidate: {name} — "
-            f"registration already closed: "
+            "registration already closed: "
             f"{reg_close}"
         )
+
         return None
 
     # -----------------------------------------------------
@@ -847,8 +1063,9 @@ def clean_event(raw):
     if category not in ALLOWED_CATEGORIES:
         print(
             f"Rejected candidate: {name} — "
-            f"category could not be verified."
+            "category could not be verified."
         )
+
         return None
 
     # -----------------------------------------------------
@@ -887,16 +1104,17 @@ def clean_event(raw):
             fmt = inferred_fmt
 
             print(
-                f"Format inferred: "
+                "Format inferred: "
                 f"{name} → {fmt}"
             )
 
         else:
             print(
                 f"Rejected candidate: {name} — "
-                f"unknown event format: "
+                "unknown event format: "
                 f"{fmt or 'blank'}"
             )
+
             return None
 
     # -----------------------------------------------------
@@ -917,7 +1135,7 @@ def clean_event(raw):
         fee = "Free"
 
     else:
-        # Never infer "Free" from a missing/unclear fee.
+        # Never infer Free from a missing/unclear fee.
         fee = "On request"
 
     # -----------------------------------------------------
@@ -980,7 +1198,11 @@ def clean_event(raw):
 
     elif not isinstance(
         raw_skills,
-        (list, tuple, set),
+        (
+            list,
+            tuple,
+            set,
+        ),
     ):
         raw_skills = []
 
@@ -1024,8 +1246,9 @@ def looks_duplicate(
 
     OR
 
-    2. normalized URL + normalized date match
+    2. normalized URL + normalized date match.
     """
+
     candidate_url = normalize_url(
         candidate.get("url")
     )
@@ -1054,19 +1277,15 @@ def looks_duplicate(
         same_name_and_date = (
             candidate_name
             and existing_name
-            and candidate_name
-            == existing_name
-            and candidate_date
-            == existing_date
+            and candidate_name == existing_name
+            and candidate_date == existing_date
         )
 
         same_url_and_date = (
             candidate_url
             and existing_url
-            and candidate_url
-            == existing_url
-            and candidate_date
-            == existing_date
+            and candidate_url == existing_url
+            and candidate_date == existing_date
         )
 
         if (
@@ -1083,7 +1302,10 @@ def next_auto_number(events):
 
     for event in events:
         event_id = str(
-            event.get("id", "")
+            event.get(
+                "id",
+                "",
+            )
         )
 
         match = re.fullmatch(
@@ -1102,9 +1324,14 @@ def next_auto_number(events):
     return highest + 1
 
 
-def research_new_events(
-    existing_events,
-):
+def research_new_events(existing_events):
+    """
+    Perform the full Tavily discovery process.
+
+    This function is ONLY called during full refresh mode.
+    Cleanup-only mode never calls this function.
+    """
+
     discovered = []
 
     auto_number = next_auto_number(
@@ -1123,9 +1350,10 @@ def research_new_events(
 
         except Exception as exc:
             print(
-                f"Tavily query failed: "
+                "Tavily query failed: "
                 f"{exc}"
             )
+
             continue
 
         answer = result.get(
@@ -1138,14 +1366,12 @@ def research_new_events(
         )
 
         print(
-            f"Structured candidates returned: "
+            "Structured candidates returned: "
             f"{len(candidates)}"
         )
 
         for raw in candidates:
-            event = clean_event(
-                raw
-            )
+            event = clean_event(raw)
 
             if not event:
                 continue
@@ -1160,9 +1386,10 @@ def research_new_events(
                 combined,
             ):
                 print(
-                    f"Duplicate skipped: "
+                    "Duplicate skipped: "
                     f"{event['name']}"
                 )
+
                 continue
 
             event["id"] = (
@@ -1211,7 +1438,7 @@ def research_new_events(
     print()
 
     print(
-        f"Tavily queries completed successfully: "
+        "Tavily queries completed successfully: "
         f"{successful_queries}/"
         f"{len(SEARCH_QUERIES)}"
     )
@@ -1219,147 +1446,12 @@ def research_new_events(
     return discovered
 
 
-# =========================================================
-# AUTOMATIC EVENT CLEANUP
-# =========================================================
-
-def cleanup_existing_events(events):
-    """
-    Remove events from the active events.json when they
-    are no longer actionable.
-
-    Rules:
-
-    - Fixed event date before today -> remove
-    - Explicit ISO registration deadline before today -> remove
-    - Event date today -> keep
-    - Registration deadline today -> keep
-    - Blank/unknown registration deadline -> keep until event passes
-    - Recurring/rolling event dates -> keep unless an explicit
-      ISO registration deadline has passed
-    """
-
-    kept = []
-    removed = []
-
-    for event in events:
-        event_name = str(
-            event.get(
-                "name",
-                "Unnamed event",
-            )
-        ).strip()
-
-        event_date = str(
-            event.get(
-                "date",
-                "",
-            )
-            or ""
-        ).strip()
-
-        reg_close = str(
-            event.get(
-                "regClose",
-                "",
-            )
-            or ""
-        ).strip()
-
-        remove_reason = None
-
-        # -------------------------------------------------
-        # RULE 1:
-        # Remove fixed-date events whose event date passed
-        # -------------------------------------------------
-
-        if not is_recurring_date(
-            event_date
-        ):
-            parsed_event_date = parse_iso_date(
-                event_date
-            )
-
-            if (
-                parsed_event_date
-                and parsed_event_date < TODAY_DATE
-            ):
-                remove_reason = (
-                    "event date passed "
-                    f"({event_date})"
-                )
-
-        # -------------------------------------------------
-        # RULE 2:
-        # Remove events whose explicit registration
-        # deadline has passed
-        # -------------------------------------------------
-
-        if (
-            remove_reason is None
-            and reg_close
-        ):
-            if normalize_text(
-                reg_close
-            ) != "rolling":
-
-                parsed_deadline = parse_iso_date(
-                    reg_close
-                )
-
-                if (
-                    parsed_deadline
-                    and parsed_deadline < TODAY_DATE
-                ):
-                    remove_reason = (
-                        "registration deadline passed "
-                        f"({reg_close})"
-                    )
-
-        # -------------------------------------------------
-        # REMOVE OR KEEP
-        # -------------------------------------------------
-
-        if remove_reason:
-            removed.append(
-                event
-            )
-
-            print(
-                "REMOVED EXPIRED EVENT: "
-                f"{event_name} — "
-                f"{remove_reason}"
-            )
-
-        else:
-            kept.append(
-                event
-            )
-
-    print()
-
-    print(
-        f"Existing events kept: "
-        f"{len(kept)}"
-    )
-
-    print(
-        f"Expired/unactionable events removed: "
-        f"{len(removed)}"
-    )
-
-    return (
-        kept,
-        removed,
-    )
-
-
 def sort_events(events):
     """
-    Fixed-date upcoming events are sorted nearest-first.
+    Sort fixed-date events nearest-first.
 
-    Recurring/rolling/non-standard dated events appear
-    after the fixed-date events.
+    Recurring/non-standard date descriptions appear
+    after fixed ISO dates.
     """
 
     def sort_key(event):
@@ -1395,7 +1487,6 @@ def save_events(events):
         "w",
         encoding="utf-8",
     ) as f:
-
         json.dump(
             events,
             f,
@@ -1406,13 +1497,53 @@ def save_events(events):
         f.write("\n")
 
 
+def parse_args():
+    """
+    Command-line modes:
+
+    python scripts/research.py
+        -> full cleanup + Tavily refresh
+
+    python scripts/research.py --cleanup-only
+        -> cleanup/sort only, zero Tavily calls
+    """
+
+    parser = argparse.ArgumentParser(
+        description=(
+            "CIEL HR Job Fair Dashboard "
+            "event maintenance."
+        )
+    )
+
+    parser.add_argument(
+        "--cleanup-only",
+        action="store_true",
+        help=(
+            "Clean expired/unactionable events "
+            "and sort events.json without making "
+            "any Tavily API calls."
+        ),
+    )
+
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+
     print("=" * 60)
 
-    print(
-        "CIEL HR JOB FAIR DASHBOARD V2 — "
-        "CLEANUP + TAVILY REFRESH"
-    )
+    if args.cleanup_only:
+        print(
+            "CIEL HR JOB FAIR DASHBOARD V2 — "
+            "DAILY CLEANUP"
+        )
+
+    else:
+        print(
+            "CIEL HR JOB FAIR DASHBOARD V2 — "
+            "CLEANUP + TAVILY REFRESH"
+        )
 
     print("=" * 60)
 
@@ -1421,19 +1552,16 @@ def main():
     )
 
     # =====================================================
-    # STEP 1
-    # LOAD CURRENT EVENTS.JSON
+    # STEP 1 — LOAD CURRENT EVENTS.JSON
     # =====================================================
 
     existing_events = load_existing_events()
 
     # =====================================================
-    # STEP 2
-    # CLEAN EXPIRED / UNACTIONABLE EXISTING EVENTS
+    # STEP 2 — CLEAN EXISTING EVENTS
     # =====================================================
 
     print()
-
     print(
         "Cleaning existing event data..."
     )
@@ -1446,12 +1574,98 @@ def main():
     )
 
     # =====================================================
-    # STEP 3
-    # RESEARCH NEW UPCOMING EVENTS
+    # CLEANUP-ONLY MODE
+    # =====================================================
+    #
+    # Intended for the DAILY GitHub Action.
+    #
+    # No Tavily function is called in this branch.
+    # Therefore daily cleanup consumes zero Tavily searches.
+    # =====================================================
+
+    if args.cleanup_only:
+        cleaned_events = sort_events(
+            active_existing_events
+        )
+
+        if cleaned_events == existing_events:
+            print()
+
+            print("=" * 60)
+            print("DAILY CLEANUP COMPLETE")
+            print("=" * 60)
+
+            print(
+                "No expired/unactionable events "
+                "needed removal."
+            )
+
+            print(
+                "Expired/unactionable events removed: "
+                f"{len(removed_events)}"
+            )
+
+            print(
+                "Total active events: "
+                f"{len(cleaned_events)}"
+            )
+
+            print(
+                "events.json remains unchanged."
+            )
+
+            return
+
+        save_events(
+            cleaned_events
+        )
+
+        print()
+
+        print("=" * 60)
+        print("DAILY CLEANUP COMPLETE")
+        print("=" * 60)
+
+        print(
+            "Expired/unactionable events removed: "
+            f"{len(removed_events)}"
+        )
+
+        print(
+            "Total active events now: "
+            f"{len(cleaned_events)}"
+        )
+
+        print(
+            "events.json updated successfully."
+        )
+
+        return
+
+    # =====================================================
+    # FULL RESEARCH MODE
+    # =====================================================
+    #
+    # Intended for the WEEKLY Monday GitHub Action.
+    #
+    # Flow:
+    #
+    # cleanup
+    #   ↓
+    # Tavily research
+    #   ↓
+    # validation
+    #   ↓
+    # duplicate detection
+    #   ↓
+    # merge
+    #   ↓
+    # sort
+    #   ↓
+    # save
     # =====================================================
 
     print()
-
     print(
         "Starting Tavily research..."
     )
@@ -1461,8 +1675,7 @@ def main():
     )
 
     # =====================================================
-    # STEP 4
-    # MERGE CLEAN EXISTING EVENTS + NEW EVENTS
+    # STEP 3 — MERGE CLEAN EXISTING + NEW EVENTS
     # =====================================================
 
     merged = (
@@ -1471,8 +1684,7 @@ def main():
     )
 
     # =====================================================
-    # STEP 5
-    # SORT UPCOMING EVENTS NEAREST-FIRST
+    # STEP 4 — SORT NEAREST UPCOMING EVENTS FIRST
     # =====================================================
 
     merged = sort_events(
@@ -1480,53 +1692,53 @@ def main():
     )
 
     # =====================================================
-    # STEP 6
-    # DETECT WHETHER EVENTS.JSON ACTUALLY CHANGED
-    # =====================================================
-    #
-    # IMPORTANT:
-    #
-    # We no longer exit simply because Tavily found zero
-    # new events.
-    #
-    # Cleanup may have removed expired events, so
-    # events.json still needs to be saved in that case.
+    # STEP 5 — SAVE ONLY IF SOMETHING CHANGED
     # =====================================================
 
     if merged == existing_events:
         print()
+
+        print("=" * 60)
+        print("WEEKLY REFRESH COMPLETE")
+        print("=" * 60)
 
         print(
             "No event data changes detected."
         )
 
         print(
-            "events.json will remain unchanged."
+            "Expired/unactionable events removed: "
+            f"{len(removed_events)}"
+        )
+
+        print(
+            "New events added: "
+            f"{len(new_events)}"
+        )
+
+        print(
+            "Total active events: "
+            f"{len(merged)}"
+        )
+
+        print(
+            "events.json remains unchanged."
         )
 
         return
-
-    # =====================================================
-    # STEP 7
-    # SAVE THE NEW ACTIVE DATASET
-    # =====================================================
 
     save_events(
         merged
     )
 
     # =====================================================
-    # FINAL REFRESH SUMMARY
+    # FINAL WEEKLY REFRESH SUMMARY
     # =====================================================
 
     print()
 
     print("=" * 60)
-
-    print(
-        "REFRESH COMPLETE"
-    )
-
+    print("WEEKLY REFRESH COMPLETE")
     print("=" * 60)
 
     print(
