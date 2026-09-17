@@ -1,35 +1,5 @@
 [
   {
-    "id": "auto-8",
-    "name": "Rojgar Mela Meerut (Phase 3)",
-    "date": "2026-09-16",
-    "region": "Meerut, Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Government of Uttar Pradesh",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "None",
-    "est": 20,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-21",
-    "name": "Job Fair – Don Bosco, Guwahati",
-    "date": "2026-09-16",
-    "region": "Guwahati, Assam",
-    "category": "Skill Sector Councils (SSCs) Job Fairs",
-    "org": "Telecom Sector Skill Council (TSSC)",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://telcojobs.in/jobfairlist.aspx"
-  },
-  {
     "id": "auto-20",
     "name": "Kaushal Mahotsav (Rozgar Mela) - Lucknow",
     "date": "2026-09-17",
