@@ -1,33 +1,5 @@
 [
   {
-    "id": "auto-20",
-    "name": "Kaushal Mahotsav (Rozgar Mela) - Lucknow",
-    "date": "2026-09-17",
-    "region": "Lucknow, Uttar Pradesh",
-    "category": "Skill Sector Councils (SSCs) Job Fairs",
-    "org": "Telecom Sector Skill Council (TSSC)",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://telcojobs.in/jobfairlist.aspx"
-  },
-  {
-    "id": "auto-28",
-    "name": "HackerX - Mumbai Tech Job Fair",
-    "date": "2026-09-17",
-    "region": "Mumbai, India",
-    "category": "Sector-Specific Tech & Startup Aggregators",
-    "org": "HackerX",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://hackerx.org/tech-job-fairs/india"
-  },
-  {
     "id": "auto-9",
     "name": "Rojgar Mela Ayodhya",
     "date": "2026-09-18",
