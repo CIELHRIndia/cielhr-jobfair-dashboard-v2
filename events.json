@@ -1,21 +1,5 @@
 [
   {
-    "id": "auto-9",
-    "name": "Rojgar Mela Ayodhya",
-    "date": "2026-09-18",
-    "region": "Ayodhya, Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Government of Uttar Pradesh",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "None",
-    "est": 250,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
     "id": "auto-27",
     "name": "National Career Service Job Fair",
     "date": "2026-09-21",
