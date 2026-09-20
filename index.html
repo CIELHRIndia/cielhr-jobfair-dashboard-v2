@@ -245,9 +245,9 @@ footer { margin-top:20px; color:var(--muted); font-size:11.5px; text-align:cente
     <p class="muted">Super Admin cleanup tools for test/demo data. These actions do not delete the GitHub event catalogue, Apps Script API token, deployment, Gmail trigger or Drive folder structure.</p>
 
     <div class="card" style="margin:12px 0">
-      <b>Delete demo candidates</b>
-      <p class="muted" style="font-size:11.5px;margin:5px 0 10px">Removes Community records whose name starts with “Demo” or whose tags contain “Demo”.</p>
-      <button class="warn" onclick="deleteDemoCandidates()">Delete demo candidates</button>
+      <b>Clear Candidate Community</b>
+      <p class="muted" style="font-size:11.5px;margin:5px 0 10px">Removes all verified Community candidate records from this browser and the approved candidate data stored by the Gmail + Drive backend. Event catalogue, assignments, registration status, actual footfall and workflow state are preserved.</p>
+      <button class="warn" onclick="clearCandidateCommunity()">Clear Candidate Community</button>
     </div>
 
     <div class="card" style="margin:12px 0">
@@ -1323,32 +1323,51 @@ function openDataCleanup(){
   show('cleanupModal');
 }
 
-function deleteDemoCandidates(){
+async function clearCandidateCommunity(){
   if(role!=='Super Admin') return;
 
-  const demo=cands.filter(c=>{
-    const demoName=/^demo\b/i.test(String(c.name||'').trim());
-    const demoTag=(c.tags||[]).some(t=>String(t).trim().toLowerCase()==='demo');
-    return demoName||demoTag;
-  });
-
-  if(!demo.length){
-    alert('No demo candidates were found.');
+  if(!mailBackendReady()){
+    alert('Connect the Apps Script backend before clearing Candidate Community. This prevents backend-approved candidates from reappearing on the next sync.');
     return;
   }
 
   const phrase=prompt(
-    `This will permanently remove ${demo.length} demo candidate record(s) from this browser's Community.\n\nType DELETE DEMO to continue:`
+    `This will permanently remove all ${cands.length} candidate record(s) from Community, including approved candidate data stored by the Gmail + Drive backend.\n\nEvent catalogue, assignments, registration status, actual footfall and workflow state will be preserved.\n\nType CLEAR COMMUNITY to continue:`
   );
 
-  if(phrase!=='DELETE DEMO') return;
+  if(phrase!=='CLEAR COMMUNITY') return;
 
-  const demoIds=new Set(demo.map(c=>c.id));
-  cands=cands.filter(c=>!demoIds.has(c.id));
-  save(LS.cands,cands);
-  renderAll();
+  $('cleanupMsg').textContent='Clearing Candidate Community…';
 
-  $('cleanupMsg').textContent=`Removed ${demo.length} demo candidate record(s).`;
+  try{
+    const result=await workflowGet('clearCandidateCommunity');
+
+    // Remove the browser copy only after the backend confirms success.
+    cands=[];
+    save(LS.cands,cands);
+    renderAll();
+
+    // Verify against the backend source of truth so deleted candidates cannot
+    // silently return from approved Drive JSON on the next normal sync.
+    const verify=await workflowGet('getApprovedCandidates');
+    const remaining=Array.isArray(verify.candidates)?verify.candidates.length:0;
+    if(remaining){
+      throw new Error(`Backend still reports ${remaining} approved candidate record(s).`);
+    }
+
+    await syncWorkflowFromBackend();
+    openDataCleanup();
+
+    const removed=Number(result&&result.removedCandidates);
+    $('cleanupMsg').textContent=Number.isFinite(removed)
+      ? `Candidate Community cleared successfully. ${removed} backend candidate record(s) removed.`
+      : 'Candidate Community cleared successfully.';
+  }catch(err){
+    // Re-sync if possible so the UI reflects the actual backend state after
+    // any partial or failed cleanup attempt.
+    try{ await syncWorkflowFromBackend(); }catch(_){}
+    $('cleanupMsg').textContent='Candidate Community cleanup failed: '+err.message;
+  }
 }
 
 async function resetSelectedEvent(){
