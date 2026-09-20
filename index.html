@@ -569,8 +569,58 @@ function backendCandidateToLocal(r,eventId,eventName){
     name:r.name||'', email:r.email||'', phone:r.phone||'', region:r.region||'',
     skills:splitList(r.skills), exp:num(r.experience??r.exp)||0,
     sector:r.sector||'', tags:splitList(r.tags),
-    source:r.sourceEvent||r.source||eventName||'', eventId:String(eventId||'')
+    source:r.sourceEvent||r.source||eventName||'', eventId:String(eventId||''),
+    verified:true,
+    backendApproved:true,
+    approvedAt:r.approvedAt||null,
+    approvedBy:r.approvedBy||''
   };
+}
+
+async function syncApprovedCandidatesFromBackend(assignments=[]){
+  if(!mailBackendReady()) return false;
+
+  const data=await workflowGet('getApprovedCandidates');
+  const rows=Array.isArray(data.candidates)?data.candidates:[];
+
+  // Any candidate tied to a backend assignment is backend-managed. Rebuild
+  // those records from Drive on every sync, while preserving genuinely local
+  // candidates that are not part of the Gmail/Drive workflow.
+  const backendEventIds=new Set(
+    (Array.isArray(assignments)?assignments:[])
+      .map(a=>String((a&&a.eventId)||''))
+      .filter(Boolean)
+  );
+  const backendCandidateIds=new Set(rows.map(r=>String((r&&r.id)||'')).filter(Boolean));
+
+  const localOnly=cands.filter(c=>{
+    if(c&&c.backendApproved) return false;
+    if(backendCandidateIds.has(String((c&&c.id)||''))) return false;
+    if(backendEventIds.has(String((c&&c.eventId)||''))) return false;
+    return true;
+  });
+
+  const approved=rows.map(r=>{
+    const backendEventId=String(r.eventId||'');
+    const assignment=(Array.isArray(assignments)?assignments:[])
+      .find(a=>String((a&&a.eventId)||'')===backendEventId);
+    const event=assignment?findEventForAssignment(assignment):null;
+    const localEventId=event?event.id:backendEventId;
+    const eventName=(event&&event.name)||(assignment&&assignment.eventName)||r.sourceEvent||'';
+    return backendCandidateToLocal(r,localEventId,eventName);
+  });
+
+  const seen=new Set();
+  cands=[...localOnly,...approved].filter(c=>{
+    const key=String((c&&c.id)||'');
+    if(!key) return true;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  save(LS.cands,cands);
+  return true;
 }
 
 async function syncWorkflowFromBackend(){
@@ -621,8 +671,13 @@ async function syncWorkflowFromBackend(){
     }
   }
 
+  // Community is rebuilt from approved JSON files in Drive. This makes
+  // approved candidates survive refreshes and appear on other devices.
+  await syncApprovedCandidatesFromBackend(assignments);
+
   save(LS.events,events);
   save(LS.pend,pend);
+  save(LS.cands,cands);
   setConn(true,'Gmail + Drive synced');
   renderAll();
   return true;
@@ -1081,18 +1136,12 @@ async function approveData(){
   if(mailBackendReady()){
     try{
       closeModal('verifyModal');
-      await workflowDecision('approveSubmission',verifyId,{approvedBy:role||'CIEL HR'});
-      staged.forEach(p=>{
-        if(!cands.some(c=>c.id===p.id)){
-          p.verified=true;
-          cands.push(p);
-        }
-      });
-      pend=pend.filter(p=>p.eventId!==verifyId);
-      save(LS.cands,cands);
-      save(LS.pend,pend);
+      const result=await workflowDecision('approveSubmission',verifyId,{approvedBy:role||'CIEL HR'});
+      // workflowDecision() re-syncs the backend, including the approved
+      // Community dataset. Do not publish from the temporary pending array.
+      const approvedNow=cands.filter(c=>String(c.eventId)===String(verifyId)).length;
       renderAll();
-      alert(staged.length+' records approved. Event → Attended. Approval confirmation email sent automatically to the Assignee.');
+      alert(approvedNow+' records available in Community. Event → Attended. Approval confirmation email sent automatically to the Assignee.');
     }catch(err){
       alert('Approval failed: '+err.message);
       await syncWorkflowFromBackend().catch(()=>{});
@@ -1402,7 +1451,10 @@ function switchTab(t){
   if((t==='assignments'||t==='verify') && mailBackendReady()) syncWorkflowFromBackend().catch(()=>setConn(false,'workflow offline'));
   if(t==='assignments') renderAssignments();
   if(t==='verify') renderVerify();
-  if(t==='community') renderCommunity();
+  if(t==='community'){
+    if(mailBackendReady()) syncWorkflowFromBackend().catch(()=>setConn(false,'workflow offline'));
+    renderCommunity();
+  }
   if(t==='analytics') renderAnalytics();
 }
 function show(id){ $(id).classList.add('show'); }
