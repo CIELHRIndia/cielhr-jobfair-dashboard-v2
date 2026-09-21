@@ -163,6 +163,20 @@
     "url": "https://tnemployment.gov.in/rojgarmela2026"
   },
   {
+    "id": "auto-39",
+    "name": "National Career Service Virtual Job Fair 2026",
+    "date": "2026-10-25",
+    "region": "Online",
+    "category": "NSDC & MSDE Flagship Rozgar Melas",
+    "org": "National Career Service (NCS), Ministry of Labour & Employment",
+    "fmt": "Virtual",
+    "fee": "On request",
+    "regClose": "2026-10-20",
+    "est": null,
+    "skills": [],
+    "url": "https://ncs.gov.in/virtual-job-fair-2026"
+  },
+  {
     "id": "auto-23",
     "name": "Maharashtra Rojgar Mela 2026 – Mumbai",
     "date": "2026-11-05",
@@ -175,6 +189,20 @@
     "est": null,
     "skills": [],
     "url": "https://employment.maharashtra.gov.in/rojgarmela2026"
+  },
+  {
+    "id": "auto-36",
+    "name": "Skill India Job Fair 2026",
+    "date": "2026-11-05",
+    "region": "Bengaluru, Karnataka",
+    "category": "NSDC & MSDE Flagship Rozgar Melas",
+    "org": "National Skill Development Corporation (NSDC)",
+    "fmt": "Hybrid",
+    "fee": "On request",
+    "regClose": "2026-10-20",
+    "est": null,
+    "skills": [],
+    "url": "https://nsdcindia.org/skill-india-job-fair-2026"
   },
   {
     "id": "auto-19",
@@ -252,6 +280,20 @@
     "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
   },
   {
+    "id": "auto-35",
+    "name": "IEEE Returning Mothers Career Fair 2026",
+    "date": "2026-11-13",
+    "region": "Karnataka",
+    "category": "Equity, Diversity & Inclusion (DEI) Foundations",
+    "org": "IEEE Returning Mothers Conference",
+    "fmt": "Virtual",
+    "fee": "On request",
+    "regClose": "",
+    "est": null,
+    "skills": [],
+    "url": "https://ieeereturningmothers.in/career-fair-2026"
+  },
+  {
     "id": "auto-11",
     "name": "Mega Job Drive Vizianagaram",
     "date": "2026-11-27",
@@ -308,6 +350,20 @@
     "est": null,
     "skills": [],
     "url": "https://employment.tn.gov.in/jobfair2026-chennai"
+  },
+  {
+    "id": "auto-37",
+    "name": "Rojgar Mela 2026 – Maharashtra",
+    "date": "2026-12-02",
+    "region": "Mumbai, Maharashtra",
+    "category": "District Employment Exchange Fairs",
+    "org": "Maharashtra State Employment Exchange",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "2026-11-20",
+    "est": null,
+    "skills": [],
+    "url": "https://mahatrikendra.maharashtra.gov.in/rojgar-mela-2026"
   },
   {
     "id": "e12",
@@ -397,6 +453,20 @@
     "est": null,
     "skills": [],
     "url": "https://employment.karnataka.gov.in/jobfair2026"
+  },
+  {
+    "id": "auto-38",
+    "name": "India International Job Fair 2027",
+    "date": "2027-01-20",
+    "region": "Hyderabad, Telangana",
+    "category": "Chamber of Commerce & Industrial Association Fairs",
+    "org": "Confederation of Indian Industry (CII)",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "2027-01-05",
+    "est": null,
+    "skills": [],
+    "url": "https://cii.in/international-job-fair-2027"
   },
   {
     "id": "e9",
