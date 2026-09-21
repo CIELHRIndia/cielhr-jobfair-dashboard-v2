@@ -209,7 +209,7 @@ footer { margin-top:20px; color:var(--muted); font-size:11.5px; text-align:cente
 
   <!-- ANALYTICS TAB -->
   <section id="tab-analytics" class="hide">
-    <div class="note">Projected vs actual footfall by job-fair category. <b>Realisation %</b> = actual ÷ estimated — higher means the category delivered more than expected. Actuals populate <b>after an event is marked Attended</b> and the Assignee replies with the footfall number on the acknowledgement email. Where actuals exist, the estimated, actual and realisation figures are calculated only from the same matched events so the comparison stays like-for-like.</div>
+    <div class="note">Projected vs actual footfall by job-fair category. <b>Realisation %</b> = actual ÷ estimated — higher means the category delivered more than expected. Actuals populate <b>after an event is marked Attended</b> and the Assignee reports the footfall through the workflow. Actual footfall is shown even when an event has no estimate; in that case Realisation % is shown as <b>Estimate unavailable</b>. Where both values exist, Realisation % is calculated only from those matched events.</div>
     <div class="card"><div class="chart-wrap"><canvas id="footChart"></canvas></div></div>
     <div class="card" style="padding:0; overflow-x:auto; margin-top:12px;">
       <table>
@@ -1254,23 +1254,23 @@ function renderAnalytics(){
   const rows=Object.keys(byCat).map(k=>{
     const arr=byCat[k];
 
-    // Compare actuals only with estimates from those exact same events.
+    // Show every reported actual, even when that event has no estimate.
+    // Realisation remains a like-for-like calculation using only events
+    // that contain both an estimate and an actual.
+    const actualEvents=arr.filter(e=>e.actual!=null);
     const matched=arr.filter(e=>e.est!=null && e.actual!=null);
 
     const allEsts=arr.map(e=>e.est).filter(v=>v!=null);
+    const actuals=actualEvents.map(e=>e.actual);
     const matchedEsts=matched.map(e=>e.est);
     const matchedActs=matched.map(e=>e.actual);
 
-    const avgAllEst=allEsts.length
+    const avgEst=allEsts.length
       ? Math.round(allEsts.reduce((a,b)=>a+b,0)/allEsts.length)
       : null;
 
-    const avgMatchedEst=matchedEsts.length
-      ? Math.round(matchedEsts.reduce((a,b)=>a+b,0)/matchedEsts.length)
-      : null;
-
-    const avgAct=matchedActs.length
-      ? Math.round(matchedActs.reduce((a,b)=>a+b,0)/matchedActs.length)
+    const avgAct=actuals.length
+      ? Math.round(actuals.reduce((a,b)=>a+b,0)/actuals.length)
       : null;
 
     const matchedEstTotal=matchedEsts.reduce((a,b)=>a+b,0);
@@ -1279,16 +1279,29 @@ function renderAnalytics(){
       ? Math.round(matchedActTotal/matchedEstTotal*100)
       : null;
 
-    const avgEst=matched.length ? avgMatchedEst : avgAllEst;
+    const hasActualWithoutEstimate=actualEvents.some(e=>e.est==null);
 
-    return {k, n:arr.length, completed:matched.length, avgEst, avgAct, real};
+    return {
+      k,
+      n:arr.length,
+      actualCount:actualEvents.length,
+      matchedCount:matched.length,
+      avgEst,
+      avgAct,
+      real,
+      hasActualWithoutEstimate
+    };
   }).sort((a,b)=>(b.avgAct||0)-(a.avgAct||0) || (b.avgEst||0)-(a.avgEst||0));
 
   $('anBody').innerHTML=rows.map(r=>`<tr>
     <td><span class="chip p">${esc(r.k)}</span></td>
-    <td>${r.n}${r.completed?` <span class="muted" style="font-size:10.5px">(${r.completed} with actual)</span>`:''}</td>
+    <td>${r.n}${r.actualCount?` <span class="muted" style="font-size:10.5px">(${r.actualCount} with actual)</span>`:''}</td>
     <td>${fmtNum(r.avgEst)}</td><td>${fmtNum(r.avgAct)}</td>
-    <td>${r.real!=null?`<b style="color:${r.real>=100?'var(--green)':r.real>=70?'var(--amber)':'var(--red)'}">${r.real}%</b>`:'<span class="muted">awaiting actuals</span>'}</td>
+    <td>${r.real!=null
+      ? `<b style="color:${r.real>=100?'var(--green)':r.real>=70?'var(--amber)':'var(--red)'}">${r.real}%</b>`
+      : r.actualCount && r.hasActualWithoutEstimate
+        ? '<span class="muted">Estimate unavailable</span>'
+        : '<span class="muted">awaiting actuals</span>'}</td>
   </tr>`).join('');
 
   const labels=rows.map(r=>r.k.replace(/ (Job )?Fairs?$/,'').slice(0,26));
