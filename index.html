@@ -136,6 +136,7 @@ footer { margin-top:20px; color:var(--muted); font-size:11.5px; text-align:cente
     </div>
     <div class="filters">
       <input class="search" id="q" placeholder="Search event, city, organiser…" oninput="renderEvents()">
+      <select id="fMonth" onchange="renderEvents()"><option value="">All months</option></select>
       <select id="fRegion" onchange="renderEvents()"><option value="">All regions</option></select>
       <select id="fCategory" onchange="renderEvents()"><option value="">All categories</option></select>
       <select id="fFormat" onchange="renderEvents()"><option value="">All formats</option><option>In-person</option><option>Virtual</option><option>Hybrid</option></select>
@@ -818,15 +819,32 @@ function refreshFilters(){
   const regions=[...new Set(events.map(e=>e.region))].sort();
   const sel=$('fRegion'), cur=sel.value;
   sel.innerHTML='<option value="">All regions</option>'+regions.map(r=>`<option ${r===cur?'selected':''}>${esc(r)}</option>`).join('');
+
+  // Build the month filter automatically from fixed YYYY-MM-DD event dates.
+  // Recurring/text-date events stay available under “All months” only.
+  const monthSel=$('fMonth'), monthCur=monthSel.value;
+  const months=[...new Set(events.map(e=>{
+    const m=String(e.date||'').match(/^(\d{4})-(\d{2})-\d{2}$/);
+    return m ? `${m[1]}-${m[2]}` : '';
+  }).filter(Boolean))].sort();
+  monthSel.innerHTML='<option value="">All months</option>'+months.map(key=>{
+    const [y,m]=key.split('-').map(Number);
+    const label=new Intl.DateTimeFormat('en-GB',{month:'long',year:'numeric'}).format(new Date(y,m-1,1));
+    return `<option value="${key}" ${key===monthCur?'selected':''}>${esc(label)}</option>`;
+  }).join('');
 }
 function statusChip(s){ const m={New:'n',Assigned:'a',Registered:'p','Verification Pending':'r',Attended:'g'}; return `<span class="chip ${m[s]||'n'}">${esc(s)}</span>`; }
 function skillChips(arr){ return (arr||[]).map(s=>`<span class="chip">${esc(s)}</span>`).join(''); }
 
 function renderEvents(){
   refreshFilters();
-  const q=$('q').value.toLowerCase(), fR=$('fRegion').value, fC=$('fCategory').value, fF=$('fFormat').value, fFee=$('fFee').value, fS=$('fStatus').value;
+  const q=$('q').value.toLowerCase(), fM=$('fMonth').value, fR=$('fRegion').value, fC=$('fCategory').value, fF=$('fFormat').value, fFee=$('fFee').value, fS=$('fStatus').value;
   let rows=events.filter(e=>{
     if(q && !(e.name+e.region+e.org+e.category).toLowerCase().includes(q)) return false;
+    if(fM){
+      const m=String(e.date||'').match(/^(\d{4})-(\d{2})-\d{2}$/);
+      if(!m || `${m[1]}-${m[2]}`!==fM) return false;
+    }
     if(fR && e.region!==fR) return false;
     if(fC && e.category!==fC) return false;
     if(fF && e.fmt!==fF) return false;
