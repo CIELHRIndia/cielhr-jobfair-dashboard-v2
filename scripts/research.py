@@ -5,7 +5,7 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import requests
 
@@ -710,52 +710,140 @@ def _url_has_hint(url, hints):
     return any(h in text for h in hints)
 
 
-def verify_employer_registration_url(url):
-    """Open URL, follow redirects and require employer-side participation evidence."""
+def _fetch_page(url):
+    """Fetch one page and return final URL + HTML without trusting redirects alone."""
     headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; CIEL-HR-JobFair-LinkVerifier/1.0)",
+        "User-Agent": "Mozilla/5.0 (compatible; CIEL-HR-JobFair-LinkVerifier/1.1)",
         "Accept": "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.1",
     }
     try:
         r = requests.get(url, headers=headers, timeout=URL_CHECK_TIMEOUT_SECONDS, allow_redirects=True, stream=True)
     except requests.RequestException as exc:
-        return False, url, "request failed: " + type(exc).__name__
+        return False, url, "", "request failed: " + type(exc).__name__
     try:
         final_url = clean_source_url(r.url or url)
         if r.status_code < 200 or r.status_code >= 400:
-            return False, final_url, f"HTTP {r.status_code}"
+            return False, final_url, "", f"HTTP {r.status_code}"
         if not source_is_allowed(final_url):
-            return False, final_url, "redirected to blocked/social domain"
+            return False, final_url, "", "redirected to blocked/social domain"
         ctype = normalize_text(r.headers.get("Content-Type", ""))
         if ctype and not any(x in ctype for x in ("text/html", "application/xhtml+xml", "text/plain")):
-            return False, final_url, "non-page content type: " + ctype
-        chunks=[]; total=0
+            return False, final_url, "", "non-page content type: " + ctype
+        chunks = []
+        total = 0
         for chunk in r.iter_content(32768):
-            if not chunk: continue
-            left=URL_CHECK_MAX_BYTES-total
-            if left <= 0: break
-            chunk=chunk[:left]; chunks.append(chunk); total += len(chunk)
-        raw=b"".join(chunks)
-        try: html=raw.decode(r.encoding or "utf-8", errors="replace")
-        except LookupError: html=raw.decode("utf-8", errors="replace")
+            if not chunk:
+                continue
+            left = URL_CHECK_MAX_BYTES - total
+            if left <= 0:
+                break
+            chunk = chunk[:left]
+            chunks.append(chunk)
+            total += len(chunk)
+        raw = b"".join(chunks)
+        try:
+            html = raw.decode(r.encoding or "utf-8", errors="replace")
+        except LookupError:
+            html = raw.decode("utf-8", errors="replace")
+        return True, final_url, html, "ok"
     finally:
         r.close()
+
+
+def _extract_employer_registration_links(html, base_url):
+    """Find direct employer/recruiter registration links embedded in a listing/event page."""
+    candidates = []
+    pattern = re.compile(
+        r"(?is)<a\b[^>]*?href\s*=\s*([\"'])(.*?)\1[^>]*>(.*?)</a>"
+    )
+    for match in pattern.finditer(str(html or "")):
+        href = str(match.group(2) or "").strip()
+        anchor_html = match.group(3) or ""
+        anchor_text = _page_text(anchor_html)
+        absolute = clean_source_url(urljoin(base_url, href))
+        if not absolute.lower().startswith(("http://", "https://")):
+            continue
+        if not source_is_allowed(absolute):
+            continue
+        signal = normalize_text(anchor_text + " " + href + " " + absolute)
+        candidate_signal = any(x in signal for x in CANDIDATE_PHRASES) or _url_has_hint(absolute, CANDIDATE_URL_HINTS)
+        employer_signal = any(x in signal for x in EMPLOYER_PHRASES) or any(x in signal for x in EMPLOYER_ROLE_TERMS) or _url_has_hint(absolute, EMPLOYER_URL_HINTS)
+        action_signal = any(x in signal for x in ACTION_TERMS) or "reg" in signal
+        if employer_signal and action_signal and not candidate_signal:
+            score = 0
+            if "register as employer" in signal or "employer registration" in signal:
+                score += 100
+            if "recruiter" in signal or "employer" in signal:
+                score += 40
+            if "jobfair-emp-reg" in signal or "emp-reg" in signal:
+                score += 40
+            if _url_has_hint(absolute, EMPLOYER_URL_HINTS):
+                score += 20
+            candidates.append((score, absolute, anchor_text))
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    seen = set()
+    result = []
+    for item in candidates:
+        normalized = normalize_url(item[1])
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        result.append(item)
+    return result[:10]
+
+
+def _employer_evidence(final_url, html):
     text = normalize_text(_page_text(html) + " " + html[:250000] + " " + final_url)
-    employer_strong=[x for x in EMPLOYER_PHRASES if x in text]
-    roles=[x for x in EMPLOYER_ROLE_TERMS if x in text]
-    actions=[x for x in ACTION_TERMS if x in text]
-    candidate=[x for x in CANDIDATE_PHRASES if x in text]
-    employer_url=_url_has_hint(final_url, EMPLOYER_URL_HINTS)
-    candidate_url=_url_has_hint(final_url, CANDIDATE_URL_HINTS)
+    employer_strong = [x for x in EMPLOYER_PHRASES if x in text]
+    roles = [x for x in EMPLOYER_ROLE_TERMS if x in text]
+    actions = [x for x in ACTION_TERMS if x in text]
+    candidate = [x for x in CANDIDATE_PHRASES if x in text]
+    employer_url = _url_has_hint(final_url, EMPLOYER_URL_HINTS)
+    candidate_url = _url_has_hint(final_url, CANDIDATE_URL_HINTS)
     if candidate and not employer_strong:
-        return False, final_url, "candidate/job-seeker registration signals: " + ", ".join(candidate[:2])
+        return False, "candidate/job-seeker registration signals: " + ", ".join(candidate[:2])
     if candidate_url and not employer_url and not employer_strong:
-        return False, final_url, "URL path appears candidate/job-seeker facing"
+        return False, "URL path appears candidate/job-seeker facing"
     if employer_strong:
-        return True, final_url, "explicit employer-facing evidence: " + ", ".join(employer_strong[:2])
+        return True, "explicit employer-facing evidence: " + ", ".join(employer_strong[:2])
     if roles and actions:
-        return True, final_url, "employer role + participation action verified"
-    return False, final_url, "no verifiable employer/recruiter registration or participation evidence"
+        return True, "employer role + participation action verified"
+    return False, "no verifiable employer/recruiter registration or participation evidence"
+
+
+def verify_employer_registration_url(url):
+    """Verify employer-side participation and prefer the deepest direct employer form."""
+    ok, final_url, html, reason = _fetch_page(url)
+    if not ok:
+        return False, final_url, reason
+
+    page_ok, page_reason = _employer_evidence(final_url, html)
+
+    # A listing/event page may be employer-capable but still not be the final form.
+    # Prefer a direct employer-registration destination when one is explicitly linked.
+    deep_links = _extract_employer_registration_links(html, final_url)
+    for _score, deep_url, anchor_text in deep_links:
+        if normalize_url(deep_url) == normalize_url(final_url):
+            continue
+        deep_ok, deep_final_url, deep_html, deep_fetch_reason = _fetch_page(deep_url)
+        if not deep_ok:
+            print(
+                "Employer registration deep link skipped: "
+                f"{deep_url} ({deep_fetch_reason})"
+            )
+            continue
+        verified, deep_reason = _employer_evidence(deep_final_url, deep_html)
+        if verified:
+            label = anchor_text or "employer registration link"
+            return True, deep_final_url, (
+                "direct employer registration page resolved from "
+                f"'{label}'; {deep_reason}"
+            )
+
+    if page_ok:
+        return True, final_url, page_reason + "; no deeper verified employer form found"
+
+    return False, final_url, page_reason
 
 
 def infer_category(
