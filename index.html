@@ -188,6 +188,7 @@ footer { margin-top:20px; color:var(--muted); font-size:11.5px; text-align:cente
   <section id="tab-community" class="hide">
     <div class="note">Active candidate database — only <b>verified</b> records appear here. Segment by region, skill, experience, sector or tag, then launch outreach (opens pre-filled Email / WhatsApp for the filtered set).</div>
     <div class="seg-grid">
+      <input class="search" id="cName" placeholder="Search candidate by name…" oninput="renderCommunity()">
       <select id="cRegion" onchange="renderCommunity()"><option value="">All regions</option></select>
       <select id="cSkill" onchange="renderCommunity()"><option value="">All skills</option></select>
       <select id="cSector" onchange="renderCommunity()"><option value="">All sectors</option></select>
@@ -1228,9 +1229,10 @@ function renderCommunity(){
   const skills=[...new Set(cands.flatMap(c=>c.skills||[]).filter(Boolean))].sort();
   const sectors=[...new Set(cands.map(c=>c.sector).filter(Boolean))].sort();
   fillSel('cRegion',regions,'All regions'); fillSel('cSkill',skills,'All skills'); fillSel('cSector',sectors,'All sectors');
-  const fR=$('cRegion').value, fSk=$('cSkill').value, fSec=$('cSector').value, fExp=$('cExp').value, fT=$('cTag').value.toLowerCase();
+  const fN=$('cName').value.trim().toLowerCase(), fR=$('cRegion').value, fSk=$('cSkill').value, fSec=$('cSector').value, fExp=$('cExp').value, fT=$('cTag').value.toLowerCase();
   const inExp=(y)=>{ if(!fExp) return true; if(fExp==='0-2')return y<=2; if(fExp==='3-5')return y>=3&&y<=5; if(fExp==='6-10')return y>=6&&y<=10; return y>10; };
   const rows=cands.filter(c=>{
+    if(fN&&!String(c.name||'').toLowerCase().includes(fN)) return false;
     if(fR&&c.region!==fR) return false;
     if(fSk&&!(c.skills||[]).includes(fSk)) return false;
     if(fSec&&c.sector!==fSec) return false;
