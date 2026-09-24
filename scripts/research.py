@@ -87,6 +87,42 @@ BLOCKED_SOURCE_DOMAINS = {
 }
 
 
+# Employer/recruiter registration-link verification
+URL_CHECK_TIMEOUT_SECONDS = 20
+URL_CHECK_MAX_BYTES = 1500000
+
+EMPLOYER_PHRASES = (
+    "employer registration", "employer participation", "register as employer",
+    "register as an employer", "recruiter registration", "recruiter participation",
+    "register as recruiter", "for employers", "for recruiters", "hire candidates",
+    "hire talent", "exhibitor registration", "exhibitor participation",
+    "become an exhibitor", "register as exhibitor", "book a booth",
+    "reserve a booth", "company registration", "corporate participation",
+)
+EMPLOYER_ROLE_TERMS = (
+    "employer", "recruiter", "hiring", "exhibitor", "sponsor",
+    "company", "corporate", "industry partner", "booth", "stall",
+)
+ACTION_TERMS = (
+    "register", "registration", "participate", "participation",
+    "apply", "application", "sign up", "signup", "book", "reserve",
+)
+CANDIDATE_PHRASES = (
+    "job seeker registration", "jobseeker registration", "candidate registration",
+    "student registration", "register as job seeker", "register as candidate",
+    "apply for jobs", "find a job", "upload resume", "submit resume",
+)
+CANDIDATE_URL_HINTS = (
+    "jobseeker", "job-seeker", "candidate", "student", "resume",
+    "apply-job", "apply-for-job",
+)
+EMPLOYER_URL_HINTS = (
+    "employer", "recruiter", "exhibitor", "sponsor", "company",
+    "corporate", "hire", "booth", "stall", "participat", "register",
+    "registration", "signup", "form",
+)
+
+
 SEARCH_QUERIES = [
     (
         "Upcoming job fairs and recruitment fairs in India from "
@@ -492,6 +528,12 @@ def tavily_search(query):
         "Do not include events whose registration deadline has passed. "
         "Prefer official government, organizer or institution sources; "
         "do not use social-media-only sources. "
+        "CRITICAL: url must be the best final EMPLOYER/RECRUITER/COMPANY/EXHIBITOR "
+        "registration or participation page for that specific fair. Prefer a direct "
+        "registration form or employer participation page over a generic event page. "
+        "Never return candidate, student or job-seeker registration/application links. "
+        "Never invent an employer URL. If no employer-facing route can be verified, "
+        "omit the event. "
         "For multi-day events use the first event date as YYYY-MM-DD. "
         "Each item must contain: "
         "name,date,region,category,org,fmt,fee,"
@@ -647,6 +689,73 @@ def clean_source_url(value):
         )
 
     return text
+
+
+
+def _page_text(html):
+    text = re.sub(r"(?is)<(script|style|noscript|template)\b[^>]*>.*?</\1>", " ", str(html or ""))
+    text = re.sub(r"(?is)<!--.*?-->", " ", text)
+    text = re.sub(r"(?is)<[^>]+>", " ", text)
+    for a, b in {"&nbsp;":" ", "&amp;":"&", "&quot;":"\"", "&#39;":"'"}.items():
+        text = text.replace(a, b)
+    return normalize_text(text)
+
+
+def _url_has_hint(url, hints):
+    try:
+        parts = urlsplit(str(url or ""))
+        text = normalize_text(parts.path.replace("/", " ") + " " + parts.query.replace("&", " "))
+    except Exception:
+        return False
+    return any(h in text for h in hints)
+
+
+def verify_employer_registration_url(url):
+    """Open URL, follow redirects and require employer-side participation evidence."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; CIEL-HR-JobFair-LinkVerifier/1.0)",
+        "Accept": "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.1",
+    }
+    try:
+        r = requests.get(url, headers=headers, timeout=URL_CHECK_TIMEOUT_SECONDS, allow_redirects=True, stream=True)
+    except requests.RequestException as exc:
+        return False, url, "request failed: " + type(exc).__name__
+    try:
+        final_url = clean_source_url(r.url or url)
+        if r.status_code < 200 or r.status_code >= 400:
+            return False, final_url, f"HTTP {r.status_code}"
+        if not source_is_allowed(final_url):
+            return False, final_url, "redirected to blocked/social domain"
+        ctype = normalize_text(r.headers.get("Content-Type", ""))
+        if ctype and not any(x in ctype for x in ("text/html", "application/xhtml+xml", "text/plain")):
+            return False, final_url, "non-page content type: " + ctype
+        chunks=[]; total=0
+        for chunk in r.iter_content(32768):
+            if not chunk: continue
+            left=URL_CHECK_MAX_BYTES-total
+            if left <= 0: break
+            chunk=chunk[:left]; chunks.append(chunk); total += len(chunk)
+        raw=b"".join(chunks)
+        try: html=raw.decode(r.encoding or "utf-8", errors="replace")
+        except LookupError: html=raw.decode("utf-8", errors="replace")
+    finally:
+        r.close()
+    text = normalize_text(_page_text(html) + " " + html[:250000] + " " + final_url)
+    employer_strong=[x for x in EMPLOYER_PHRASES if x in text]
+    roles=[x for x in EMPLOYER_ROLE_TERMS if x in text]
+    actions=[x for x in ACTION_TERMS if x in text]
+    candidate=[x for x in CANDIDATE_PHRASES if x in text]
+    employer_url=_url_has_hint(final_url, EMPLOYER_URL_HINTS)
+    candidate_url=_url_has_hint(final_url, CANDIDATE_URL_HINTS)
+    if candidate and not employer_strong:
+        return False, final_url, "candidate/job-seeker registration signals: " + ", ".join(candidate[:2])
+    if candidate_url and not employer_url and not employer_strong:
+        return False, final_url, "URL path appears candidate/job-seeker facing"
+    if employer_strong:
+        return True, final_url, "explicit employer-facing evidence: " + ", ".join(employer_strong[:2])
+    if roles and actions:
+        return True, final_url, "employer role + participation action verified"
+    return False, final_url, "no verifiable employer/recruiter registration or participation evidence"
 
 
 def infer_category(
@@ -1006,6 +1115,22 @@ def clean_event(raw):
         )
 
         return None
+
+    # -----------------------------------------------------
+    # Employer/recruiter registration-link verification
+    # -----------------------------------------------------
+    print(f"Verifying employer registration URL: {name}")
+    link_ok, verified_url, link_reason = verify_employer_registration_url(url)
+    if not link_ok:
+        print(
+            f"Rejected candidate: {name} — employer registration URL not verified: "
+            f"{link_reason} | {verified_url}"
+        )
+        return None
+    if verified_url != url:
+        print(f"Employer registration redirect resolved: {url} → {verified_url}")
+    print(f"Employer registration URL verified: {verified_url} ({link_reason})")
+    url = verified_url
 
     # -----------------------------------------------------
     # Event date validation / normalization
