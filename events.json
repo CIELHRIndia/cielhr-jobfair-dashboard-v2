@@ -1,35 +1,5 @@
 [
   {
-    "id": "auto-10",
-    "name": "Rojgar Mela Meerut (Phase 4)",
-    "date": "2026-09-23",
-    "region": "Meerut, Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Government of Uttar Pradesh",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "None",
-    "est": 410,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-30",
-    "name": "IEEE Global Virtual Career Fair",
-    "date": "2026-09-23",
-    "region": "Virtual",
-    "category": "Equity, Diversity & Inclusion (DEI) Foundations",
-    "org": "IEEE Returning Mothers Conference, IEEE Industrial Engagement Committee",
-    "fmt": "Virtual",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://ieeereturningmothers.in/career-fair-2026"
-  },
-  {
     "id": "e2",
     "name": "Naukri Career Fair 2026 (Virtual)",
     "date": "2026-10-01",
