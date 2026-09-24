@@ -33,6 +33,20 @@
     "url": "https://telcojobs.in/jobfairlist.aspx"
   },
   {
+    "id": "auto-41",
+    "name": "Regional Employment Office Job Fair – Prayagraj",
+    "date": "2026-10-09",
+    "region": "Uttar Pradesh, Prayagraj",
+    "category": "District Employment Exchange Fairs",
+    "org": "Regional Employment Office, Prayagraj",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": null,
+    "skills": [],
+    "url": "https://telcojobs.in/Jobfair-Emp-Reg.aspx/?jid=437"
+  },
+  {
     "id": "auto-3",
     "name": "HackerX Tech Job Fair - Hyderabad",
     "date": "2026-10-15",
@@ -89,6 +103,20 @@
     "est": null,
     "skills": [],
     "url": "https://upemployment.gov.in/rojgarmela2026"
+  },
+  {
+    "id": "auto-48",
+    "name": "Rojgaar Mela – Badaun",
+    "date": "2026-10-17",
+    "region": "Uttar Pradesh",
+    "category": "District Employment Exchange Fairs",
+    "org": "Uttar Pradesh Department of Employment",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": 1020,
+    "skills": [],
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
     "id": "auto-22",
@@ -294,6 +322,20 @@
     "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
   },
   {
+    "id": "auto-47",
+    "name": "Rojgaar Mela – Bhadohi (Sant Ravidas Nagar)",
+    "date": "2026-11-27",
+    "region": "Uttar Pradesh",
+    "category": "District Employment Exchange Fairs",
+    "org": "Uttar Pradesh Department of Employment",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": 200,
+    "skills": [],
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
+  },
+  {
     "id": "auto-33",
     "name": "Maharashtra Rojgar Mela 2026",
     "date": "2026-12-01",
@@ -336,6 +378,20 @@
     "url": "https://mahatrikendra.maharashtra.gov.in/rojgar-mela-2026"
   },
   {
+    "id": "auto-46",
+    "name": "Rojgaar Mela – Varanasi",
+    "date": "2026-12-04",
+    "region": "Uttar Pradesh",
+    "category": "District Employment Exchange Fairs",
+    "org": "Uttar Pradesh Department of Employment",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": 1090,
+    "skills": [],
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
+  },
+  {
     "id": "e12",
     "name": "IEEE Career Fair 2026 (Returning Mothers)",
     "date": "2026-12-05",
@@ -353,6 +409,20 @@
     "url": "https://ieeereturningmothers.in/career-fair-2026/"
   },
   {
+    "id": "auto-45",
+    "name": "Rojgaar Mela – Varanasi",
+    "date": "2026-12-05",
+    "region": "Uttar Pradesh",
+    "category": "District Employment Exchange Fairs",
+    "org": "Uttar Pradesh Department of Employment",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": 1052,
+    "skills": [],
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
+  },
+  {
     "id": "auto-15",
     "name": "Job Fair in Bhadohi (Sant Ravidas Nagar)",
     "date": "2026-12-09",
@@ -367,6 +437,20 @@
     "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
   },
   {
+    "id": "auto-44",
+    "name": "Rojgaar Mela – Bhadohi (Sant Ravidas Nagar)",
+    "date": "2026-12-09",
+    "region": "Uttar Pradesh",
+    "category": "District Employment Exchange Fairs",
+    "org": "Uttar Pradesh Department of Employment",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": 200,
+    "skills": [],
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
+  },
+  {
     "id": "auto-16",
     "name": "Job Fair in Bhadohi (Sant Ravidas Nagar)",
     "date": "2026-12-16",
@@ -379,6 +463,20 @@
     "est": null,
     "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
+  },
+  {
+    "id": "auto-43",
+    "name": "Rojgaar Mela – Bhadohi (Sant Ravidas Nagar)",
+    "date": "2026-12-16",
+    "region": "Uttar Pradesh",
+    "category": "District Employment Exchange Fairs",
+    "org": "Uttar Pradesh Department of Employment",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": 200,
+    "skills": [],
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
     "id": "auto-5",
@@ -409,6 +507,20 @@
     "est": null,
     "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
+  },
+  {
+    "id": "auto-42",
+    "name": "Rojgaar Mela – Bhadohi (Sant Ravidas Nagar)",
+    "date": "2026-12-22",
+    "region": "Uttar Pradesh",
+    "category": "District Employment Exchange Fairs",
+    "org": "Uttar Pradesh Department of Employment",
+    "fmt": "In-person",
+    "fee": "On request",
+    "regClose": "",
+    "est": 200,
+    "skills": [],
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
     "id": "auto-34",
