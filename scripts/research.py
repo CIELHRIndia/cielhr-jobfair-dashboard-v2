@@ -53,14 +53,42 @@ TODAY = TODAY_DATE.isoformat()
 
 
 ALLOWED_CATEGORIES = [
-    "NSDC & MSDE Flagship Rozgar Melas",
     "District Employment Exchange Fairs",
-    "Skill Sector Councils (SSCs) Job Fairs",
-    "Chamber of Commerce & Industrial Association Fairs",
-    "Sector-Specific Tech & Startup Aggregators",
-    "Media House & Publication Job Fairs",
-    "Equity, Diversity & Inclusion (DEI) Foundations",
 ]
+
+# District-employment-only discovery gate.
+# An event must clearly be run through official district employment machinery.
+DISTRICT_EMPLOYMENT_TERMS = (
+    "district employment exchange",
+    "district employment office",
+    "district employment officer",
+    "district employment and career guidance centre",
+    "district employment & career guidance centre",
+    "district employment and career guidance center",
+    "district employment & career guidance center",
+    "district career centre",
+    "district career center",
+    "model career centre",
+    "model career center",
+    "employment exchange",
+    "employment office",
+    "career centre",
+    "career center",
+    "sewayojan",
+    "rojgar sangam",
+    "rojgaar sangam",
+)
+
+# These official systems commonly host district Employment Exchange/Career Centre fairs.
+# Presence of a domain alone is not enough: the event metadata must still carry
+# district/employment-office evidence.
+OFFICIAL_EMPLOYMENT_DOMAINS = (
+    "ncs.gov.in",
+    "dge.gov.in",
+    "sewayojan.up.nic.in",
+    "rojgaarsangam.up.gov.in",
+)
+
 
 
 ALLOWED_SKILLS = [
@@ -125,34 +153,35 @@ EMPLOYER_URL_HINTS = (
 
 SEARCH_QUERIES = [
     (
-        "Upcoming job fairs and recruitment fairs in India from "
-        f"{TODAY} onward employers recruiter participation 2026 2027"
+        "site:ncs.gov.in job fair district employment exchange career centre "
+        f"India upcoming after {TODAY} employer participation"
     ),
     (
-        "site:ncs.gov.in upcoming job fair rojgar mela India "
-        f"{TODAY} 2026 2027"
+        "upcoming District Employment Exchange job fair India "
+        f"after {TODAY} employer participation"
     ),
     (
-        "upcoming government rojgar mela job fair India district employment "
-        f"2026 2027 after {TODAY}"
+        "upcoming District Employment Office rojgar mela India "
+        f"after {TODAY} employers"
     ),
     (
-        "upcoming technology startup career fair hiring fair India "
-        f"2026 2027 after {TODAY}"
+        "upcoming District Employment and Career Guidance Centre job fair India "
+        f"after {TODAY} employers"
     ),
     (
-        "upcoming virtual career fair India employers recruitment "
-        f"2026 2027 after {TODAY}"
+        "upcoming Model Career Centre district job fair India "
+        f"after {TODAY} employer participation"
     ),
     (
-        "upcoming skill council job fair India NSDC MSDE NIELIT BFSI "
-        f"2026 2027 after {TODAY}"
+        "site:gov.in district employment exchange job fair rojgar mela "
+        f"2026 2027 after {TODAY} employer"
     ),
     (
-        "upcoming chamber commerce industrial association job fair India "
-        f"2026 2027 after {TODAY}"
+        "site:nic.in district employment office job fair rojgar mela "
+        f"2026 2027 after {TODAY} employer"
     ),
 ]
+
 
 
 def load_existing_events():
@@ -392,6 +421,50 @@ def source_is_allowed(url):
     return True
 
 
+def is_district_employment_event(name, org, region, category, url):
+    """
+    Strict scope gate for this dashboard.
+
+    Accept only events whose supplied event metadata clearly identifies an
+    Employment Exchange / District Employment Office / Career Centre style
+    organizer. An official-looking domain by itself is never enough.
+    """
+    text = normalize_text(
+        " ".join(
+            [
+                str(name or ""),
+                str(org or ""),
+                str(region or ""),
+                str(category or ""),
+            ]
+        )
+    )
+
+    matched_terms = [
+        term for term in DISTRICT_EMPLOYMENT_TERMS
+        if term in text
+    ]
+
+    if not matched_terms:
+        return False, "no District Employment Exchange/Career Centre evidence in event metadata"
+
+    # Reject generic use of 'career centre' unless the record also carries
+    # employment/district/government context.
+    generic_career_only = all(
+        term in ("career centre", "career center")
+        for term in matched_terms
+    )
+    if generic_career_only and not any(
+        x in text for x in (
+            "district", "employment", "government", "govt",
+            "ncs", "national career service", "model career",
+        )
+    ):
+        return False, "generic career-centre wording is not enough"
+
+    return True, "district employment evidence: " + ", ".join(matched_terms[:2])
+
+
 def cleanup_existing_events(events):
     """
     Remove events from the active events.json when they
@@ -521,14 +594,24 @@ def tavily_search(query):
         )
 
     structured_instruction = (
-        " Return ONLY a JSON array of genuine upcoming India job fairs. "
+        " Return ONLY a JSON array of genuine upcoming India job fairs that are "
+        "organized, hosted or officially facilitated through a District Employment "
+        "Exchange, District Employment Office, District Employment & Career Guidance "
+        "Centre, Model Career Centre, or equivalent government district employment "
+        "machinery. This restriction is mandatory. Exclude university fairs, private "
+        "career fairs, commercial expos, chambers, skill councils, media fairs, DEI "
+        "fairs and generic NCS events unless the specific fair is clearly tied to a "
+        "district Employment Exchange/Career Centre. "
         "Only include events on or after "
         + TODAY
         + " or explicitly recurring events. "
         "Do not include events whose registration deadline has passed. "
-        "Prefer official government, organizer or institution sources; "
-        "do not use social-media-only sources. "
-        "CRITICAL: url must be the best final EMPLOYER/RECRUITER/COMPANY/EXHIBITOR "
+        "Prefer the official government employment portal, Employment Exchange, Career "
+        "Centre, district administration or organizer source; do not use social-media-only sources. "
+        "Set category exactly to 'District Employment Exchange Fairs'. "
+        "The org/name/region fields must preserve the source wording that proves the "
+        "District Employment Exchange/Career Centre connection; never invent that connection. "
+        "CRITICAL: url must be the best final EMPLOYER/RECRUITER/COMPANY "
         "registration or participation page for that specific fair. Prefer a direct "
         "registration form or employer participation page over a generic event page. "
         "Never return candidate, student or job-seeker registration/application links. "
@@ -1205,7 +1288,26 @@ def clean_event(raw):
         return None
 
     # -----------------------------------------------------
+    # District Employment Exchange / Career Centre scope gate
+    # -----------------------------------------------------
+    district_ok, district_reason = is_district_employment_event(
+        name, org, region, category, url
+    )
+    if not district_ok:
+        print(
+            f"Rejected candidate: {name} — outside District Employment "
+            f"Exchange/Career Centre scope: {district_reason}"
+        )
+        return None
+
+    # The dashboard now has one deliberate event category only.
+    category = "District Employment Exchange Fairs"
+    print(f"District employment scope verified: {name} ({district_reason})")
+
+    # -----------------------------------------------------
     # Employer/recruiter registration-link verification
+    # PRESERVED: HTTP check -> redirects -> employer-vs-candidate
+    # -> deeper employer registration link resolution.
     # -----------------------------------------------------
     print(f"Verifying employer registration URL: {name}")
     link_ok, verified_url, link_reason = verify_employer_registration_url(url)
@@ -1264,22 +1366,8 @@ def clean_event(raw):
     # -----------------------------------------------------
     # Category normalization
     # -----------------------------------------------------
-
-    if category not in ALLOWED_CATEGORIES:
-        category = infer_category(
-            name,
-            org,
-            region,
-            fmt,
-        )
-
-    if category not in ALLOWED_CATEGORIES:
-        print(
-            f"Rejected candidate: {name} — "
-            "category could not be verified."
-        )
-
-        return None
+    # Scope was already verified above. Keep one category only.
+    category = "District Employment Exchange Fairs"
 
     # -----------------------------------------------------
     # Format normalization
