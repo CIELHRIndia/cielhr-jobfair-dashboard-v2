@@ -523,6 +523,12 @@ def _identity_tokens(value):
 def verify_event_identity(event, final_url, html):
     name,region,org=(str(event.get(k,"")) for k in ("name","region","org"))
     event_date=str(event.get("date",""))
+
+    # Dashboard records must represent a concrete upcoming fair occurrence.
+    # Reject generic recurring/rolling catalogue entries even when their page
+    # contains employer terminology.
+    if not parse_iso_date(event_date):
+        return False, "no concrete upcoming event date; generic recurring/rolling record rejected"
     domain=get_domain(final_url)
     page=normalize_text(_page_text(html)+" "+final_url)
     identity=_identity_tokens(name)|_identity_tokens(region)|_identity_tokens(org)
