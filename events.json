@@ -1,35 +1,5 @@
 [
   {
-    "id": "auto-2",
-    "name": "Rojgar Mahakumbh 2026",
-    "date": "2026-10-09",
-    "region": "Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "TSSC",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "2026-09-30",
-    "est": 8000,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://telcojobs.in/Jobfair-Emp-Reg.aspx/?jid=437"
-  },
-  {
-    "id": "auto-41",
-    "name": "Regional Employment Office Job Fair – Prayagraj",
-    "date": "2026-10-09",
-    "region": "Uttar Pradesh, Prayagraj",
-    "category": "District Employment Exchange Fairs",
-    "org": "Regional Employment Office, Prayagraj",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://telcojobs.in/Jobfair-Emp-Reg.aspx/?jid=437"
-  },
-  {
     "id": "auto-13",
     "name": "Job Fair in Bhadohi (Sant Ravidas Nagar)",
     "date": "2026-10-15",
@@ -84,22 +54,6 @@
     "est": null,
     "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
-  },
-  {
-    "id": "auto-11",
-    "name": "Mega Job Drive Vizianagaram",
-    "date": "2026-11-27",
-    "region": "Vizianagaram, Andhra Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Career Center Vizianagaram (in collaboration with APSSDC, MCC, SEEDAP)",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "2026-11-20",
-    "est": 0,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://www.hirist.tech/blog/hirists-recruiter-activity-helping-you-make-smarter-job-applications/"
   },
   {
     "id": "auto-18",
@@ -184,42 +138,6 @@
     "est": null,
     "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
-  },
-  {
-    "id": "e8",
-    "name": "UP Rozgar Mela 2026",
-    "date": "Recurring — district-wise",
-    "region": "Uttar Pradesh (North)",
-    "category": "District Employment Exchange Fairs",
-    "org": "Sewayojan / Rojgar Sangam UP",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "Rolling",
-    "est": 3500,
-    "skills": [
-      "Graduates",
-      "ITI / Diploma",
-      "10th Pass and Above"
-    ],
-    "url": "https://www.rojgarstudies.com/upessc-up-pgt-teacher-online-form-2026-for-2607-post/"
-  },
-  {
-    "id": "e11",
-    "name": "Chhattisgarh Rozgar Mela 2026",
-    "date": "Recurring — district-wise",
-    "region": "Chhattisgarh (Central)",
-    "category": "District Employment Exchange Fairs",
-    "org": "CG Employment Dept",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "Rolling",
-    "est": 2000,
-    "skills": [
-      "10th Pass and Above",
-      "Below 10th",
-      "ITI / Diploma"
-    ],
-    "url": "https://thehowpedia.com/pm-rojgar-mela-registration/"
   },
   {
     "id": "e7",
