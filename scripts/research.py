@@ -512,6 +512,58 @@ def migrate_existing_catalogue(events):
     return kept, removed
 
 
+
+def _identity_tokens(value):
+    stop={"job","fair","mela","rojgar","rozgar","rojgaar","employment","exchange","office",
+          "department","career","centre","center","regional","district","government","govt",
+          "uttar","pradesh","india","state","north","south","east","west","central","2026","2027",
+          "sant","ravidas","nagar","mega","drive"}
+    return {t for t in re.findall(r"[a-z0-9]+",normalize_text(value)) if len(t)>=4 and t not in stop}
+
+def verify_event_identity(event, final_url, html):
+    name,region,org=(str(event.get(k,"")) for k in ("name","region","org"))
+    event_date=str(event.get("date",""))
+    domain=get_domain(final_url)
+    page=normalize_text(_page_text(html)+" "+final_url)
+    identity=_identity_tokens(name)|_identity_tokens(region)|_identity_tokens(org)
+    matched=[t for t in identity if t in page]
+    official=any(domain==d or domain.endswith("."+d) for d in OFFICIAL_EMPLOYMENT_DOMAINS)
+    parsed=parse_iso_date(event_date)
+    date_ok=True
+    if parsed:
+        variants={parsed.isoformat(),parsed.strftime("%d-%m-%Y"),parsed.strftime("%d/%m/%Y"),
+                  parsed.strftime("%d %B %Y").lower(),parsed.strftime("%d %b %Y").lower()}
+        date_ok=any(normalize_text(v) in page for v in variants)
+    if not official:
+        if len(matched)<2:
+            return False,"third-party page does not prove this event/place identity"
+        if parsed and not date_ok:
+            return False,"third-party page does not verify this event date"
+        return True,"event identity verified on third-party page"
+    if not (_identity_tokens(region)|_identity_tokens(name)):
+        return False,"generic/recurring record has no concrete district/place identity"
+    return True,"official employment portal + concrete district event identity"
+
+def verify_event_url_and_identity(event,url):
+    ok,final_url,html,reason=_fetch_page(url)
+    if not ok: return False,final_url,reason
+    page_ok,page_reason=_employer_evidence(final_url,html)
+    for _score,deep_url,anchor_text in _extract_employer_registration_links(html,final_url):
+        if normalize_url(deep_url)==normalize_url(final_url): continue
+        deep_ok,deep_final,deep_html,_=_fetch_page(deep_url)
+        if not deep_ok: continue
+        employer_ok,employer_reason=_employer_evidence(deep_final,deep_html)
+        if employer_ok:
+            identity_ok,identity_reason=verify_event_identity(event,deep_final,deep_html)
+            if identity_ok:
+                return True,deep_final,f"{employer_reason}; {identity_reason}"
+    if page_ok:
+        identity_ok,identity_reason=verify_event_identity(event,final_url,html)
+        if identity_ok: return True,final_url,page_reason+"; "+identity_reason
+        return False,final_url,identity_reason
+    return False,final_url,page_reason
+
+
 def verify_existing_event_urls(events):
     """Require every surviving existing event to resolve to a live employer/recruiter route."""
     kept, removed = [], []
@@ -523,7 +575,7 @@ def verify_existing_event_urls(events):
             print(f"EXISTING URL REMOVED: {name} — missing/invalid URL")
             continue
         print(f"Revalidating existing employer URL: {name}")
-        ok, verified_url, reason=verify_employer_registration_url(url)
+        ok, verified_url, reason=verify_event_url_and_identity(event, url)
         if not ok:
             removed.append(event)
             print(f"EXISTING URL REMOVED: {name} — employer route not verified: {reason} | {verified_url}")
@@ -1365,8 +1417,9 @@ def clean_event(raw):
     # PRESERVED: HTTP check -> redirects -> employer-vs-candidate
     # -> deeper employer registration link resolution.
     # -----------------------------------------------------
-    print(f"Verifying employer registration URL: {name}")
-    link_ok, verified_url, link_reason = verify_employer_registration_url(url)
+    print(f"Verifying employer registration URL + event identity: {name}")
+    identity_event = {"name": name, "date": raw_event_date, "region": region, "org": org}
+    link_ok, verified_url, link_reason = verify_event_url_and_identity(identity_event, url)
     if not link_ok:
         print(
             f"Rejected candidate: {name} — employer registration URL not verified: "
@@ -1681,6 +1734,22 @@ def next_auto_number(events):
     return highest + 1
 
 
+
+def remove_url_date_identity_collisions(events):
+    kept,removed,seen=[],[],{}
+    for event in events:
+        d=normalize_text(event.get("date")); u=normalize_url(event.get("url"))
+        if not d or not u or is_recurring_date(d):
+            kept.append(event); continue
+        key=(d,u)
+        if key in seen and normalize_text(seen[key].get("name"))!=normalize_text(event.get("name")):
+            first=seen[key]; removed.append(event)
+            print(f"URL/DATE IDENTITY COLLISION REMOVED: {event.get('name','')} ({event.get('id','')}) — preserving {first.get('name','')} ({first.get('id','')})")
+            continue
+        seen.setdefault(key,event); kept.append(event)
+    return kept,removed
+
+
 def research_new_events(existing_events):
     """
     Perform the full Tavily discovery process.
@@ -1935,6 +2004,7 @@ def main():
     migrated_events = []
     url_removed_events = []
     duplicate_removed_events = []
+    identity_collision_removed_events = []
     if not args.cleanup_only:
         active_existing_events, migrated_events = migrate_existing_catalogue(
             active_existing_events
@@ -1945,6 +2015,9 @@ def main():
             active_existing_events
         )
         active_existing_events, duplicate_removed_events = migrate_existing_catalogue(
+            active_existing_events
+        )
+        active_existing_events, identity_collision_removed_events = remove_url_date_identity_collisions(
             active_existing_events
         )
 
