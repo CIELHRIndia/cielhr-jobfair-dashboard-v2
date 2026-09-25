@@ -465,6 +465,52 @@ def is_district_employment_event(name, org, region, category, url):
     return True, "district employment evidence: " + ", ".join(matched_terms[:2])
 
 
+
+def _district_event_key(event):
+    event_date = normalize_text(event.get("date"))
+    name = normalize_text(event.get("name"))
+    region = normalize_text(event.get("region"))
+    for token in ("job fair","rojgar mela","rozgar mela","rojgaar mela","employment fair","mega job fair"):
+        name = name.replace(token, " ")
+    name = re.sub(r"[^a-z0-9]+", " ", name).strip()
+    region_tokens = [t for t in re.findall(r"[a-z0-9]+", region)
+                     if len(t) >= 4 and t not in {"uttar","pradesh","india","district","state","north","south","east","west","central"}]
+    shared = [t for t in region_tokens if t in name]
+    place = shared[0] if shared else re.sub(r"[^a-z0-9]+", " ", region).strip()
+    return event_date, place, "district-employment"
+
+
+def migrate_existing_catalogue(events):
+    """Keep only district-employment records and conservatively collapse same-place/date duplicates."""
+    kept, removed, seen = [], [], {}
+    for event in events:
+        name = str(event.get("name", "Unnamed event")).strip()
+        ok, _reason = is_district_employment_event(
+            event.get("name"), event.get("org"), event.get("region"),
+            event.get("category"), event.get("url")
+        )
+        if not ok:
+            removed.append(event)
+            print(f"CATALOGUE MIGRATION REMOVED: {name} — outside district-employment scope")
+            continue
+        key = _district_event_key(event)
+        if key[0] and key[1] and key in seen:
+            survivor = seen[key]
+            removed.append(event)
+            print(
+                f"CATALOGUE MIGRATION REMOVED DUPLICATE: {name} ({event.get('id','')}) "
+                f"— preserving {survivor.get('name','')} ({survivor.get('id','')})"
+            )
+            continue
+        kept.append(event)
+        if key[0] and key[1]:
+            seen[key] = event
+    print()
+    print(f"Catalogue migration kept: {len(kept)}")
+    print(f"Catalogue migration removed: {len(removed)}")
+    return kept, removed
+
+
 def cleanup_existing_events(events):
     """
     Remove events from the active events.json when they
@@ -1853,6 +1899,14 @@ def main():
     ) = cleanup_existing_events(
         existing_events
     )
+
+    # Full refresh migrates the active catalogue to district-employment-only scope.
+    # Cleanup-only remains expiry-only and still makes zero Tavily calls.
+    migrated_events = []
+    if not args.cleanup_only:
+        active_existing_events, migrated_events = migrate_existing_catalogue(
+            active_existing_events
+        )
 
     # =====================================================
     # CLEANUP-ONLY MODE
