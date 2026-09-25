@@ -13,7 +13,7 @@
     "skills": [
       "Graduates"
     ],
-    "url": "https://telcojobs.in/jobfairlist.aspx"
+    "url": "https://telcojobs.in/Jobfair-Emp-Reg.aspx/?jid=437"
   },
   {
     "id": "auto-41",
@@ -41,21 +41,7 @@
     "regClose": "",
     "est": null,
     "skills": [],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-31",
-    "name": "Uttar Pradesh Rojgar Mela 2026",
-    "date": "2026-10-15",
-    "region": "Lucknow, Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Uttar Pradesh Employment Exchange",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://upemployment.gov.in/rojgarmela2026"
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
     "id": "auto-48",
@@ -72,34 +58,6 @@
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
-    "id": "auto-32",
-    "name": "Tamil Nadu Rojgar Mela 2026",
-    "date": "2026-10-25",
-    "region": "Chennai, Tamil Nadu",
-    "category": "District Employment Exchange Fairs",
-    "org": "Tamil Nadu Employment Exchange",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://tnemployment.gov.in/rojgarmela2026"
-  },
-  {
-    "id": "auto-23",
-    "name": "Maharashtra Rojgar Mela 2026 – Mumbai",
-    "date": "2026-11-05",
-    "region": "Maharashtra",
-    "category": "District Employment Exchange Fairs",
-    "org": "Maharashtra Employment Exchange",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "2026-10-30",
-    "est": null,
-    "skills": [],
-    "url": "https://employment.maharashtra.gov.in/rojgarmela2026"
-  },
-  {
     "id": "auto-19",
     "name": "Job Fair in Bhadohi (Sant Ravidas Nagar)",
     "date": "2026-11-06",
@@ -111,7 +69,7 @@
     "regClose": "",
     "est": null,
     "skills": [],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
     "id": "auto-14",
@@ -125,7 +83,7 @@
     "regClose": "",
     "est": null,
     "skills": [],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
+    "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
     "id": "auto-11",
@@ -141,7 +99,7 @@
     "skills": [
       "Graduates"
     ],
-    "url": "https://www.hirist.tech/blog/a-complete-guide-to-it-job-fair-in-india"
+    "url": "https://www.hirist.tech/blog/hirists-recruiter-activity-helping-you-make-smarter-job-applications/"
   },
   {
     "id": "auto-18",
@@ -155,63 +113,7 @@
     "regClose": "",
     "est": null,
     "skills": [],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-47",
-    "name": "Rojgaar Mela – Bhadohi (Sant Ravidas Nagar)",
-    "date": "2026-11-27",
-    "region": "Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Uttar Pradesh Department of Employment",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": 200,
-    "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
-  },
-  {
-    "id": "auto-33",
-    "name": "Maharashtra Rojgar Mela 2026",
-    "date": "2026-12-01",
-    "region": "Mumbai, Maharashtra",
-    "category": "District Employment Exchange Fairs",
-    "org": "Maharashtra Employment Exchange",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://mahakam.gov.in/rojgarmela2026"
-  },
-  {
-    "id": "auto-24",
-    "name": "Tamil Nadu Employment Exchange Job Fair 2026 – Chennai",
-    "date": "2026-12-02",
-    "region": "Tamil Nadu",
-    "category": "District Employment Exchange Fairs",
-    "org": "Tamil Nadu Employment Exchange",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "2026-11-27",
-    "est": null,
-    "skills": [],
-    "url": "https://employment.tn.gov.in/jobfair2026-chennai"
-  },
-  {
-    "id": "auto-37",
-    "name": "Rojgar Mela 2026 – Maharashtra",
-    "date": "2026-12-02",
-    "region": "Mumbai, Maharashtra",
-    "category": "District Employment Exchange Fairs",
-    "org": "Maharashtra State Employment Exchange",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "2026-11-20",
-    "est": null,
-    "skills": [],
-    "url": "https://mahatrikendra.maharashtra.gov.in/rojgar-mela-2026"
   },
   {
     "id": "auto-46",
@@ -253,20 +155,6 @@
     "regClose": "",
     "est": null,
     "skills": [],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-44",
-    "name": "Rojgaar Mela – Bhadohi (Sant Ravidas Nagar)",
-    "date": "2026-12-09",
-    "region": "Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Uttar Pradesh Department of Employment",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": 200,
-    "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
@@ -280,20 +168,6 @@
     "fee": "On request",
     "regClose": "",
     "est": null,
-    "skills": [],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-43",
-    "name": "Rojgaar Mela – Bhadohi (Sant Ravidas Nagar)",
-    "date": "2026-12-16",
-    "region": "Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Uttar Pradesh Department of Employment",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": 200,
     "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
@@ -309,53 +183,7 @@
     "regClose": "",
     "est": null,
     "skills": [],
-    "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-42",
-    "name": "Rojgaar Mela – Bhadohi (Sant Ravidas Nagar)",
-    "date": "2026-12-22",
-    "region": "Uttar Pradesh",
-    "category": "District Employment Exchange Fairs",
-    "org": "Uttar Pradesh Department of Employment",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": 200,
-    "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
-  },
-  {
-    "id": "auto-34",
-    "name": "Karnataka Job Fair 2026-27",
-    "date": "2027-01-20",
-    "region": "Bengaluru, Karnataka",
-    "category": "District Employment Exchange Fairs",
-    "org": "Karnataka Employment Exchange",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://employment.karnataka.gov.in/jobfair2026"
-  },
-  {
-    "id": "e6",
-    "name": "Bihar Rozgar Mela 2026",
-    "date": "Recurring — district-wise",
-    "region": "Bihar (East)",
-    "category": "District Employment Exchange Fairs",
-    "org": "Bihar Labour Dept / NCS",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "Rolling",
-    "est": 3000,
-    "skills": [
-      "ITI / Diploma",
-      "10th Pass and Above",
-      "Below 10th"
-    ],
-    "url": "https://www.skillupbihar.in/guides/bihar-rojgar-mela-job-fair-2026"
   },
   {
     "id": "e8",
@@ -373,7 +201,7 @@
       "ITI / Diploma",
       "10th Pass and Above"
     ],
-    "url": "https://www.rojgarstudies.com/up-rojgar-mela-june-2026-recruitment/"
+    "url": "https://www.rojgarstudies.com/upessc-up-pgt-teacher-online-form-2026-for-2607-post/"
   },
   {
     "id": "e11",
@@ -391,7 +219,7 @@
       "Below 10th",
       "ITI / Diploma"
     ],
-    "url": "https://thehowpedia.com/chhattisgarh-rojgar-mela-cg-job-fair-employment/"
+    "url": "https://thehowpedia.com/pm-rojgar-mela-registration/"
   },
   {
     "id": "e7",
