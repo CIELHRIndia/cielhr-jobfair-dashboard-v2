@@ -138,22 +138,5 @@
     "est": null,
     "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
-  },
-  {
-    "id": "e7",
-    "name": "Maharashtra Rozgar Melava 2026",
-    "date": "Recurring — Mumbai/Pune/Thane/Nagpur",
-    "region": "Maharashtra (West)",
-    "category": "District Employment Exchange Fairs",
-    "org": "Maharashtra Skill Dev / NCS",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "Rolling",
-    "est": 4000,
-    "skills": [
-      "ITI / Diploma",
-      "10th Pass and Above"
-    ],
-    "url": "https://majhinaukri.in/rojgar-melava/"
   }
 ]
