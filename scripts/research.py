@@ -472,13 +472,14 @@ def _district_event_key(event):
     region = normalize_text(event.get("region"))
     for token in ("job fair","rojgar mela","rozgar mela","rojgaar mela","employment fair","mega job fair"):
         name = name.replace(token, " ")
-    name = re.sub(r"[^a-z0-9]+", " ", name).strip()
-    region_tokens = [t for t in re.findall(r"[a-z0-9]+", region)
-                     if len(t) >= 4 and t not in {"uttar","pradesh","india","district","state","north","south","east","west","central"}]
-    shared = [t for t in region_tokens if t in name]
-    place = shared[0] if shared else re.sub(r"[^a-z0-9]+", " ", region).strip()
+    stop={"uttar","pradesh","india","district","state","north","south","east","west","central",
+          "department","employment","office","exchange","career","centre","center","job","fair",
+          "mela","rojgar","rozgar","rojgaar","government","govt","sant","ravidas","nagar"}
+    rt=[t for t in re.findall(r"[a-z0-9]+",region) if len(t)>=4 and t not in stop]
+    nt=[t for t in re.findall(r"[a-z0-9]+",name) if len(t)>=4 and t not in stop]
+    shared=[t for t in rt if t in nt]
+    place=shared[0] if shared else (nt[-1] if nt else (rt[0] if rt else ""))
     return event_date, place, "district-employment"
-
 
 def migrate_existing_catalogue(events):
     """Keep only district-employment records and conservatively collapse same-place/date duplicates."""
@@ -508,6 +509,35 @@ def migrate_existing_catalogue(events):
     print()
     print(f"Catalogue migration kept: {len(kept)}")
     print(f"Catalogue migration removed: {len(removed)}")
+    return kept, removed
+
+
+def verify_existing_event_urls(events):
+    """Require every surviving existing event to resolve to a live employer/recruiter route."""
+    kept, removed = [], []
+    for event in events:
+        name=str(event.get("name","Unnamed event")).strip()
+        url=clean_source_url(event.get("url",""))
+        if not url or not url.lower().startswith(("http://","https://")):
+            removed.append(event)
+            print(f"EXISTING URL REMOVED: {name} — missing/invalid URL")
+            continue
+        print(f"Revalidating existing employer URL: {name}")
+        ok, verified_url, reason=verify_employer_registration_url(url)
+        if not ok:
+            removed.append(event)
+            print(f"EXISTING URL REMOVED: {name} — employer route not verified: {reason} | {verified_url}")
+            continue
+        updated=dict(event)
+        updated["url"]=verified_url
+        if normalize_url(verified_url)!=normalize_url(url):
+            print(f"EXISTING URL UPDATED: {name}: {url} → {verified_url}")
+        else:
+            print(f"EXISTING URL VERIFIED: {name} — {reason}")
+        kept.append(updated)
+    print()
+    print(f"Existing employer URLs verified/kept: {len(kept)}")
+    print(f"Existing events removed for unusable employer URLs: {len(removed)}")
     return kept, removed
 
 
@@ -1903,8 +1933,18 @@ def main():
     # Full refresh migrates the active catalogue to district-employment-only scope.
     # Cleanup-only remains expiry-only and still makes zero Tavily calls.
     migrated_events = []
+    url_removed_events = []
+    duplicate_removed_events = []
     if not args.cleanup_only:
         active_existing_events, migrated_events = migrate_existing_catalogue(
+            active_existing_events
+        )
+        print()
+        print("Revalidating existing employer/recruiter URLs...")
+        active_existing_events, url_removed_events = verify_existing_event_urls(
+            active_existing_events
+        )
+        active_existing_events, duplicate_removed_events = migrate_existing_catalogue(
             active_existing_events
         )
 
