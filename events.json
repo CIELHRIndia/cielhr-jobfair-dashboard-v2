@@ -1,22 +1,5 @@
 [
   {
-    "id": "e2",
-    "name": "Naukri Career Fair 2026 (Virtual)",
-    "date": "2026-10-01",
-    "region": "Pan-India (Virtual)",
-    "category": "Media House & Publication Job Fairs",
-    "org": "Naukri.com",
-    "fmt": "Virtual",
-    "fee": "On request",
-    "regClose": "2026-09-25",
-    "est": 25000,
-    "skills": [
-      "BE /B Tech and Post Graduate",
-      "Graduates"
-    ],
-    "url": "https://www.naukri.com/campus/contests/career-fair-2026"
-  },
-  {
     "id": "auto-2",
     "name": "Rojgar Mahakumbh 2026",
     "date": "2026-10-09",
@@ -47,22 +30,6 @@
     "url": "https://telcojobs.in/Jobfair-Emp-Reg.aspx/?jid=437"
   },
   {
-    "id": "auto-3",
-    "name": "HackerX Tech Job Fair - Hyderabad",
-    "date": "2026-10-15",
-    "region": "Hyderabad, Telangana, India",
-    "category": "Sector-Specific Tech & Startup Aggregators",
-    "org": "HackerX",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "None",
-    "est": 0,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://hackerx.org/tech-job-fairs/india"
-  },
-  {
     "id": "auto-13",
     "name": "Job Fair in Bhadohi (Sant Ravidas Nagar)",
     "date": "2026-10-15",
@@ -75,20 +42,6 @@
     "est": null,
     "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-26",
-    "name": "Naukri.com Virtual Career Expo 2026",
-    "date": "2026-10-15",
-    "region": "India",
-    "category": "Media House & Publication Job Fairs",
-    "org": "Naukri.com",
-    "fmt": "Virtual",
-    "fee": "On request",
-    "regClose": "2026-10-01",
-    "est": null,
-    "skills": [],
-    "url": "https://www.naukri.com/virtual-career-expo-2026"
   },
   {
     "id": "auto-31",
@@ -119,20 +72,6 @@
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
-    "id": "auto-22",
-    "name": "National Career Service (NCS) Job Fair 2026 – New Delhi",
-    "date": "2026-10-20",
-    "region": "Delhi",
-    "category": "NSDC & MSDE Flagship Rozgar Melas",
-    "org": "National Career Service, Ministry of Labour & Employment",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "2026-10-15",
-    "est": null,
-    "skills": [],
-    "url": "https://ncs.gov.in/jobfair2026-delhi"
-  },
-  {
     "id": "auto-32",
     "name": "Tamil Nadu Rojgar Mela 2026",
     "date": "2026-10-25",
@@ -145,20 +84,6 @@
     "est": null,
     "skills": [],
     "url": "https://tnemployment.gov.in/rojgarmela2026"
-  },
-  {
-    "id": "auto-39",
-    "name": "National Career Service Virtual Job Fair 2026",
-    "date": "2026-10-25",
-    "region": "Online",
-    "category": "NSDC & MSDE Flagship Rozgar Melas",
-    "org": "National Career Service (NCS), Ministry of Labour & Employment",
-    "fmt": "Virtual",
-    "fee": "On request",
-    "regClose": "2026-10-20",
-    "est": null,
-    "skills": [],
-    "url": "https://ncs.gov.in/virtual-job-fair-2026"
   },
   {
     "id": "auto-23",
@@ -175,20 +100,6 @@
     "url": "https://employment.maharashtra.gov.in/rojgarmela2026"
   },
   {
-    "id": "auto-36",
-    "name": "Skill India Job Fair 2026",
-    "date": "2026-11-05",
-    "region": "Bengaluru, Karnataka",
-    "category": "NSDC & MSDE Flagship Rozgar Melas",
-    "org": "National Skill Development Corporation (NSDC)",
-    "fmt": "Hybrid",
-    "fee": "On request",
-    "regClose": "2026-10-20",
-    "est": null,
-    "skills": [],
-    "url": "https://nsdcindia.org/skill-india-job-fair-2026"
-  },
-  {
     "id": "auto-19",
     "name": "Job Fair in Bhadohi (Sant Ravidas Nagar)",
     "date": "2026-11-06",
@@ -203,53 +114,6 @@
     "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
   },
   {
-    "id": "e4",
-    "name": "Career Setu BFSI Virtual Job Fair",
-    "date": "2026-11-11",
-    "region": "Pan-India, 20+ states (Virtual)",
-    "category": "Skill Sector Councils (SSCs) Job Fairs",
-    "org": "BFSI Sector Skill Council",
-    "fmt": "Virtual",
-    "fee": "Free",
-    "regClose": "2026-11-08",
-    "est": 15000,
-    "skills": [
-      "Graduates",
-      "BE /B Tech and Post Graduate"
-    ],
-    "url": "https://bfsissc.com/CareerSetu/"
-  },
-  {
-    "id": "auto-4",
-    "name": "HackerX Tech Job Fair - Pune",
-    "date": "2026-11-12",
-    "region": "Pune, Maharashtra, India",
-    "category": "Sector-Specific Tech & Startup Aggregators",
-    "org": "HackerX",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "None",
-    "est": 0,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://hackerx.org/tech-job-fairs/india"
-  },
-  {
-    "id": "auto-29",
-    "name": "HackerX - Pune Tech Job Fair",
-    "date": "2026-11-12",
-    "region": "Pune, India",
-    "category": "Sector-Specific Tech & Startup Aggregators",
-    "org": "HackerX",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://hackerx.org/tech-job-fairs/india/pune"
-  },
-  {
     "id": "auto-14",
     "name": "Job Fair in Bhadohi (Sant Ravidas Nagar)",
     "date": "2026-11-13",
@@ -262,34 +126,6 @@
     "est": null,
     "skills": [],
     "url": "https://rojgaarsangam.up.gov.in/RojgaarMela"
-  },
-  {
-    "id": "auto-35",
-    "name": "IEEE Returning Mothers Career Fair 2026",
-    "date": "2026-11-13",
-    "region": "Karnataka",
-    "category": "Equity, Diversity & Inclusion (DEI) Foundations",
-    "org": "IEEE Returning Mothers Conference",
-    "fmt": "Virtual",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://ieeereturningmothers.in/career-fair-2026"
-  },
-  {
-    "id": "auto-40",
-    "name": "IEEE Returning Mothers Conference 2026 Career Fair",
-    "date": "2026-11-13",
-    "region": "Bengaluru, Karnataka, India",
-    "category": "Equity, Diversity & Inclusion (DEI) Foundations",
-    "org": "IEEE Returning Mothers Conference",
-    "fmt": "Virtual",
-    "fee": "On request",
-    "regClose": "",
-    "est": null,
-    "skills": [],
-    "url": "https://careerfair.ieee.org/global/recruiters/"
   },
   {
     "id": "auto-11",
@@ -392,23 +228,6 @@
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
-    "id": "e12",
-    "name": "IEEE Career Fair 2026 (Returning Mothers)",
-    "date": "2026-12-05",
-    "region": "Pan-India (Virtual)",
-    "category": "Equity, Diversity & Inclusion (DEI) Foundations",
-    "org": "IEEE Industrial Engagement Committee",
-    "fmt": "Virtual",
-    "fee": "On request",
-    "regClose": "2026-11-28",
-    "est": 1500,
-    "skills": [
-      "BE /B Tech and Post Graduate",
-      "Graduates"
-    ],
-    "url": "https://ieeereturningmothers.in/career-fair-2026/"
-  },
-  {
     "id": "auto-45",
     "name": "Rojgaar Mela – Varanasi",
     "date": "2026-12-05",
@@ -479,22 +298,6 @@
     "url": "https://rojgaarsangam.up.gov.in/EmployerRegistration"
   },
   {
-    "id": "auto-5",
-    "name": "HackerX Tech Job Fair - Chennai",
-    "date": "2026-12-17",
-    "region": "Chennai, Tamil Nadu, India",
-    "category": "Sector-Specific Tech & Startup Aggregators",
-    "org": "HackerX",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "None",
-    "est": 0,
-    "skills": [
-      "Graduates"
-    ],
-    "url": "https://hackerx.org/tech-job-fairs/india"
-  },
-  {
     "id": "auto-17",
     "name": "Job Fair in Bhadohi (Sant Ravidas Nagar)",
     "date": "2026-12-22",
@@ -535,73 +338,6 @@
     "est": null,
     "skills": [],
     "url": "https://employment.karnataka.gov.in/jobfair2026"
-  },
-  {
-    "id": "auto-38",
-    "name": "India International Job Fair 2027",
-    "date": "2027-01-20",
-    "region": "Hyderabad, Telangana",
-    "category": "Chamber of Commerce & Industrial Association Fairs",
-    "org": "Confederation of Indian Industry (CII)",
-    "fmt": "In-person",
-    "fee": "On request",
-    "regClose": "2027-01-05",
-    "est": null,
-    "skills": [],
-    "url": "https://cii.in/international-job-fair-2027"
-  },
-  {
-    "id": "e9",
-    "name": "International Job Fair Bengaluru (overseas)",
-    "date": "2027-04-04",
-    "region": "Bengaluru, Karnataka (South)",
-    "category": "NSDC & MSDE Flagship Rozgar Melas",
-    "org": "KVTSDC, Govt of Karnataka",
-    "fmt": "In-person",
-    "fee": "Free",
-    "regClose": "2027-03-20",
-    "est": 2000,
-    "skills": [
-      "ITI / Diploma",
-      "Graduates"
-    ],
-    "url": "https://bengaluruinternationaljobfair.com/"
-  },
-  {
-    "id": "e5",
-    "name": "NCS Employment Fair (Rozgar Sangam)",
-    "date": "Recurring — check portal",
-    "region": "Pan-India, district-wise (all zones)",
-    "category": "NSDC & MSDE Flagship Rozgar Melas",
-    "org": "National Career Service, Govt of India",
-    "fmt": "Hybrid",
-    "fee": "Free",
-    "regClose": "Rolling",
-    "est": 5000,
-    "skills": [
-      "Graduates",
-      "ITI / Diploma",
-      "10th Pass and Above"
-    ],
-    "url": "https://www.ncs.gov.in/"
-  },
-  {
-    "id": "e10",
-    "name": "NIELIT Mega Job Fair 2026",
-    "date": "Recurring — check schedule",
-    "region": "Multi-city (North & East)",
-    "category": "Skill Sector Councils (SSCs) Job Fairs",
-    "org": "NIELIT, Govt of India",
-    "fmt": "Hybrid",
-    "fee": "Free",
-    "regClose": "Rolling",
-    "est": 2500,
-    "skills": [
-      "BE /B Tech and Post Graduate",
-      "Graduates",
-      "ITI / Diploma"
-    ],
-    "url": "https://www.nielit.gov.in/content/mega-jof-fair"
   },
   {
     "id": "e6",
